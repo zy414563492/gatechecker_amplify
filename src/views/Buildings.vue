@@ -8,6 +8,10 @@
       :items="buildings"
       class="elevation-1"
     >
+      <template v-slot:[`item.userID`]="{ item }">
+        {{ showDetailByID(item.userID) }}
+      </template>
+
       <template v-slot:top>
         <v-toolbar
           flat
@@ -49,6 +53,7 @@
                         v-model="editedItem.building_id"
                         label="施設ID"
                         outlined
+                        :disabled="editedIndex !== -1"
                       ></v-text-field>
                     </v-col>
                   </v-row>
@@ -82,11 +87,20 @@
                       cols="12"
                     >
                       <v-select
-                        v-model="editedItem.to_user"
+                        v-model="editedItem.userID"
                         :items="users"
+                        item-text="detail"
+                        item-value="id"
                         label="所属ユーザー"
                         outlined
-                      ></v-select>
+                      >
+                        <template slot="selection" slot-scope='{ item }'>
+                          {{ `${ item.detail.user_id } - ${ item.detail.name }` }}
+                        </template>
+                        <template slot="item" slot-scope='{ item }'>
+                          {{ `${ item.detail.user_id } - ${ item.detail.name }` }}
+                        </template>
+                      </v-select>
                     </v-col>
                   </v-row>
 
@@ -152,147 +166,221 @@
 </template>
 
 <script>
-  export default {
-    data: () => ({
-      name: '施設',
-      dialog: false,
-      dialogDelete: false,
-      headers: [
-        { text: '施設ID', value: 'building_id' },
-        { text: '名称', value: 'name' },
-        { text: 'アドレス', value: 'location' },
-        { text: '所属ユーザー', value: 'to_user' },
-        { text: '操作', value: 'actions', sortable: false },
-      ],
-      users: [],
-      buildings: [],
-      editedIndex: -1,
-      editedItem: {
-        building_id: null,
-        name: null,
-        location: null,
-        to_user: null,
-      },
-      defaultItem: {
-        building_id: null,
-        name: null,
-        location: null,
-        to_user: null,
-      },
-    }),
+import { DataStore } from '@aws-amplify/datastore';
+import { User, Building } from '@/models';
+// import { Build } from '@aws-amplify/ui-components/dist/types/stencil-public-runtime';
 
-    computed: {
-      formTitle () {
-        return this.editedIndex === -1 ? '施設を追加' : '施設を更新'
-      },
+export default {
+  data: () => ({
+    name: '施設',
+    dialog: false,
+    dialogDelete: false,
+    headers: [
+      { text: '施設ID', value: 'building_id' },
+      { text: '名称', value: 'name' },
+      { text: 'アドレス', value: 'location' },
+      { text: '所属ユーザー', value: 'userID' },
+      { text: '操作', value: 'actions', sortable: false },
+    ],
+    users: [],
+    // users中元素构造如下
+    // user: {
+    //   id: null,
+    //   detail: {
+    //     user_id: null,
+    //     name: null,
+    //   },
+    // },
+    buildings: [],
+    editedIndex: -1,
+    editedItem: {
+      building_id: null,
+      name: null,
+      location: null,
+      userID: null,
+    },
+    defaultItem: {
+      building_id: null,
+      name: null,
+      location: null,
+      userID: null,
+    },
+  }),
+
+  computed: {
+    formTitle () {
+      return this.editedIndex === -1 ? '施設を追加' : '施設を更新'
+    },
+  },
+
+  watch: {
+    dialog (val) {
+      val || this.close()
+    },
+    dialogDelete (val) {
+      val || this.closeDelete()
+    },
+  },
+
+  created () {
+    this.getUsers()
+    this.initialize()
+  },
+
+  methods: {
+    // async initialize () {
+    //   await this.$axios
+    //   .post('/api/get_buildings')
+    //   .then((res) => {
+    //     console.log(res.data)
+    //     this.buildings = res.data.building_list
+    //   })
+    //   .catch(err => console.log(err))
+    // },
+
+    async initialize () {
+      var init_buildings = await DataStore.query(Building)
+      init_buildings.forEach(building => this.buildings.push(building))
+      console.log(this.buildings)
     },
 
-    watch: {
-      dialog (val) {
-        val || this.close()
-      },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
+    async addBuilding (item) {
+      await this.$axios({
+        method: 'post',
+        url: '/api/add_building',
+        withCredentials: true,
+        data: JSON.stringify(item)
+      }).then((res) => {
+        console.log(res)
+      })
     },
 
-    created () {
-      this.initialize()
-      this.getUsers()
+    async removeBuilding (item) {
+      await this.$axios({
+        method: 'post',
+        url: '/api/remove_building',
+        withCredentials: true,
+        data: JSON.stringify(item)
+      }).then((res) => {
+        console.log(res)
+      })
     },
 
-    methods: {
-      async initialize () {
-        await this.$axios
-        .post('/api/get_buildings')
-        .then((res) => {
-          console.log(res.data)
-          this.buildings = res.data.building_list
-        })
-        .catch(err => console.log(err))
-      },
+    // 所属ユーザーの選択肢を取得する
+    // async getUsers () {
+    //   await this.$axios
+    //   .post('/api/get_users_id')
+    //   .then((res) => {
+    //     console.log(res.data)
+    //     this.users = res.data.users
+    //   })
+    //   .catch(err => console.log(err))
+    // },
 
-      async addBuilding (item) {
-        await this.$axios({
-          method: 'post',
-          url: '/api/add_building',
-          withCredentials: true,
-          data: JSON.stringify(item)
-        }).then((res) => {
-          console.log(res)
-        })
-      },
+    async getUsers () {
+      var select_users = await DataStore.query(User)
+      // const user_front = {
+      //   id: user.id,
 
-      async removeBuilding (item) {
-        await this.$axios({
-          method: 'post',
-          url: '/api/remove_building',
-          withCredentials: true,
-          data: JSON.stringify(item)
-        }).then((res) => {
-          console.log(res)
-        })
-      },
-
-      // 所属ユーザーの選択肢を取得する
-      async getUsers () {
-        await this.$axios
-        .post('/api/get_users_id')
-        .then((res) => {
-          console.log(res.data)
-          this.users = res.data.users
-        })
-        .catch(err => console.log(err))
-      },
-
-      editItem (item) {
-        this.editedIndex = this.buildings.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialog = true
-      },
-
-      deleteItem (item) {
-        this.editedIndex = this.buildings.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialogDelete = true
-      },
-
-      deleteItemConfirm () {
-        // remove from database
-        this.removeBuilding(this.editedItem)
-
-        // remove from frontend table
-        this.buildings.splice(this.editedIndex, 1)
-        this.closeDelete()
-      },
-
-      close () {
-        this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-      closeDelete () {
-        this.dialogDelete = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-      save () {
-        if (this.editedIndex > -1) {
-          Object.assign(this.buildings[this.editedIndex], this.editedItem)
-        } else {
-          this.buildings.push(this.editedItem)
-        }
-        // エンドユーザーの追加
-        this.addBuilding(this.editedItem)
-
-        this.close()
-      },
+      // }
+      // select_users.forEach(user => this.users.push(user.id))
+      select_users.forEach(user => this.users.push({
+        id: user.id,
+        detail: {
+          user_id: user.user_id,
+          name: user.name,
+        },
+      }))
+      // console.log(this.users)
     },
-  }
+
+    editItem (item) {
+      this.editedIndex = this.buildings.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+      this.dialog = true
+    },
+
+    deleteItem (item) {
+      this.editedIndex = this.buildings.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+      this.dialogDelete = true
+    },
+
+    // DELETE
+    async deleteItemConfirm () {
+      // backend
+      // this.removeBuilding(this.editedItem)
+
+      const targetItem = await DataStore.query(Building, this.buildings[this.editedIndex].id)
+      DataStore.delete(targetItem)
+      console.log(`Item【${targetItem.building_id}】deleted.`)
+
+      // frontend
+      this.buildings.splice(this.editedIndex, 1)
+      this.closeDelete()
+    },
+
+    close () {
+      this.dialog = false
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+      })
+    },
+
+    closeDelete () {
+      this.dialogDelete = false
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+      })
+    },
+
+    async save () {
+      // UPDATE
+      if (this.editedIndex > -1) {
+        // Object.assign(this.buildings[this.editedIndex], this.editedItem)
+
+        // backend
+        const targetItem = await DataStore.query(Building, this.buildings[this.editedIndex].id)
+
+        var updatedItem = Building.copyOf(targetItem, updated => {
+          // 不改building_id，因此在修改的UI中也禁用掉了building_id输入框
+          updated.name = this.editedItem.name
+          updated.location = this.editedItem.location
+          updated.userID = this.editedItem.userID
+        })
+
+        await DataStore.save(updatedItem)
+        console.log(`Item【${targetItem.building_id}】updated.`)
+
+        // frontend
+        this.buildings.splice(this.editedIndex, 1, updatedItem)
+
+      // CREATE
+      } else {
+        // backend
+        const createdItem = await DataStore.save(
+          new Building(this.editedItem)
+        )
+        console.log(`Item【${this.editedItem.building_id}】created.`)
+        // console.log(`createdItem_id = ${createdItem.id}`)
+
+        // frontend
+        this.buildings.push(createdItem)
+        console.log(this.buildings)
+        // this.buildings.push(this.editedItem)
+      }
+      // エンドユーザーの追加
+      // this.addBuilding(this.editedItem)
+      this.close()
+    },
+
+    // find specific item in object array
+    showDetailByID (id) {
+      let obj = this.users.find(o => o.id === id)
+      return `${ obj.detail.user_id } - ${ obj.detail.name }`
+    }
+  },
+}
 </script>

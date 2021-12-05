@@ -120,7 +120,7 @@
                       cols="12"
                     >
                       <v-select
-                        v-model="editedItem.to_gate"
+                        v-model="editedItem.gateID"
                         :items="gates"
                         item-text="detail"
                         item-value="id"

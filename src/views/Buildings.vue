@@ -279,11 +279,8 @@ export default {
 
     async getUsers () {
       var select_users = await DataStore.query(User)
-      // const user_front = {
-      //   id: user.id,
-
-      // }
       // select_users.forEach(user => this.users.push(user.id))
+
       select_users.forEach(user => this.users.push({
         id: user.id,
         detail: {
@@ -379,8 +376,12 @@ export default {
     // find specific item in object array
     showDetailByID (id) {
       let obj = this.users.find(o => o.id === id)
-      return `${ obj.detail.user_id } - ${ obj.detail.name }`
-    }
+      if (obj !== undefined) {
+        return `${ obj.detail.user_id } - ${ obj.detail.name }`
+      } else {
+        return ''
+      }
+    },
   },
 }
 </script>

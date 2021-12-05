@@ -131,7 +131,6 @@
 <script>
 import { DataStore } from '@aws-amplify/datastore';
 import { User } from '@/models';
-import { mapGetters } from "vuex";
 
 export default {
   data: () => ({
@@ -150,14 +149,6 @@ export default {
       name: null,
     },
     defaultItem: {
-      // id: null,
-      // createdAt: null,
-      // updatedAt: null,
-      // user_id: null,
-      // name: null,
-      // _deleted: null,
-      // _lastChangedAt: null,
-      // _version: null
       user_id: null,
       name: null,
     },
@@ -296,8 +287,8 @@ export default {
 
         // frontend
         this.users.push(createdItem)
-        // this.users.push(this.editedItem)
         console.log(this.users)
+        // this.users.push(this.editedItem)
       }
 
       // エンドユーザーの追加

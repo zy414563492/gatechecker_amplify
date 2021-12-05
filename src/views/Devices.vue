@@ -8,6 +8,10 @@
       :items="devices"
       class="elevation-1"
     >
+      <template v-slot:[`item.gateID`]="{ item }">
+        {{ showDetailByID(item.gateID) }}
+      </template>
+
       <template v-slot:[`item.is_entrance`]="{ item }">
         {{ item.is_entrance ? '入口' : '出口'}}
       </template>
@@ -62,6 +66,7 @@
                         v-model="editedItem.device_id"
                         label="デバイスID"
                         outlined
+                        :disabled="editedIndex !== -1"
                       ></v-text-field>
                     </v-col>
                   </v-row>
@@ -117,9 +122,18 @@
                       <v-select
                         v-model="editedItem.to_gate"
                         :items="gates"
+                        item-text="detail"
+                        item-value="id"
                         label="所属ゲート"
                         outlined
-                      ></v-select>
+                      >
+                        <template slot="selection" slot-scope='{ item }'>
+                          {{ `${ item.detail.gate_id } - ${ item.detail.name }` }}
+                        </template>
+                        <template slot="item" slot-scope='{ item }'>
+                          {{ `${ item.detail.gate_id } - ${ item.detail.name }` }}
+                        </template>
+                      </v-select>
                     </v-col>
                   </v-row>
 
@@ -185,163 +199,237 @@
 </template>
 
 <script>
-  export default {
-    data: () => ({
-      name: 'デバイス',
-      dialog: false,
-      dialogDelete: false,
-      headers: [
-        { text: 'デバイスID', value: 'device_id' },
-        { text: '向き', value: 'is_entrance' },
-        { text: '状態', value: 'is_using' },
-        { text: '最近のアラート時間', value: 'last_alert_time' },
-        { text: '所属ゲート', value: 'to_gate' },
-        { text: '操作', value: 'actions', sortable: false },
-      ],
-      gates: [],
-      devices: [],
-      direction: [
-        {state: true, state_name:'入口'},
-        {state: false, state_name:'出口'}
-      ],
-      device_state: [
-        {state: true, state_name:'使用中'},
-        {state: false, state_name:'一時停止'}
-      ],
-      editedIndex: -1,
-      editedItem: {
-        device_id: null,
-        is_entrance: true,
-        is_using: true,
-        last_alert_time: null,
-        to_gate: null,
-      },
-      defaultItem: {
-        device_id: null,
-        is_entrance: true,
-        is_using: true,
-        last_alert_time: null,
-        to_gate: null,
-      },
-    }),
+import { DataStore } from '@aws-amplify/datastore'
+import { Gate, Device } from '@/models'
 
-    computed: {
-      formTitle () {
-        return this.editedIndex === -1 ? 'デバイスを追加' : 'デバイスを更新'
-      },
+export default {
+  data: () => ({
+    name: 'デバイス',
+    dialog: false,
+    dialogDelete: false,
+    headers: [
+      { text: 'デバイスID', value: 'device_id' },
+      { text: '向き', value: 'is_entrance' },
+      { text: '状態', value: 'is_using' },
+      { text: '最近のアラート時間', value: 'last_alert_time' },
+      { text: '所属ゲート', value: 'gateID' },
+      { text: '操作', value: 'actions', sortable: false },
+    ],
+    gates: [],
+    // gates中元素构造如下
+    // gate: {
+    //   id: null,
+    //   detail: {
+    //     gate_id: null,
+    //     name: null,
+    //   },
+    // },
+    devices: [],
+    direction: [
+      {state: true, state_name:'入口'},
+      {state: false, state_name:'出口'}
+    ],
+    device_state: [
+      {state: true, state_name:'使用中'},
+      {state: false, state_name:'一時停止'}
+    ],
+    editedIndex: -1,
+    editedItem: {
+      device_id: null,
+      is_entrance: true,
+      is_using: true,
+      last_alert_time: null,
+      gateID: null,
+    },
+    defaultItem: {
+      device_id: null,
+      is_entrance: true,
+      is_using: true,
+      last_alert_time: null,
+      gateID: null,
+    },
+  }),
+
+  computed: {
+    formTitle () {
+      return this.editedIndex === -1 ? 'デバイスを追加' : 'デバイスを更新'
+    },
+  },
+
+  watch: {
+    dialog (val) {
+      val || this.close()
+    },
+    dialogDelete (val) {
+      val || this.closeDelete()
+    },
+  },
+
+  created () {
+    this.getGates()
+    this.initialize()
+  },
+
+  methods: {
+    // async initialize () {
+    //   await this.$axios
+    //   .post('/api/get_devices')
+    //   .then((res) => {
+    //     console.log(res.data)
+    //     this.devices = res.data.device_list
+    //   })
+    //   .catch(err => console.log(err))
+    // },
+
+    async initialize () {
+      var init_devices = await DataStore.query(Device)
+      init_devices.forEach(device => this.devices.push(device))
+      console.log(this.devices)
     },
 
-    watch: {
-      dialog (val) {
-        val || this.close()
-      },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
+    async addDevice (item) {
+      await this.$axios({
+        method: 'post',
+        url: '/api/add_device',
+        withCredentials: true,
+        data: JSON.stringify(item)
+      }).then((res) => {
+        console.log(res)
+      })
     },
 
-    created () {
-      this.initialize()
-      this.getGates()
+    async removeDevice (item) {
+      await this.$axios({
+        method: 'post',
+        url: '/api/remove_device',
+        withCredentials: true,
+        data: JSON.stringify(item)
+      }).then((res) => {
+        console.log(res)
+      })
     },
 
-    methods: {
-      async initialize () {
-        await this.$axios
-        .post('/api/get_devices')
-        .then((res) => {
-          console.log(res.data)
-          this.devices = res.data.device_list
-        })
-        .catch(err => console.log(err))
-      },
+    // 所属ゲートの選択肢を取得する
+    // async getGates () {
+    //   await this.$axios
+    //   .post('/api/get_gates_id')
+    //   .then((res) => {
+    //     console.log(res.data)
+    //     this.gates = res.data.gates
+    //   })
+    //   .catch(err => console.log(err))
+    // },
+    
+    async getGates () {
+      var select_gates = await DataStore.query(Gate)
 
-      async addDevice (item) {
-        await this.$axios({
-          method: 'post',
-          url: '/api/add_device',
-          withCredentials: true,
-          data: JSON.stringify(item)
-        }).then((res) => {
-          console.log(res)
-        })
-      },
-
-      async removeDevice (item) {
-        await this.$axios({
-          method: 'post',
-          url: '/api/remove_device',
-          withCredentials: true,
-          data: JSON.stringify(item)
-        }).then((res) => {
-          console.log(res)
-        })
-      },
-
-      // 所属ゲートの選択肢を取得する
-      async getGates () {
-        await this.$axios
-        .post('/api/get_gates_id')
-        .then((res) => {
-          console.log(res.data)
-          this.gates = res.data.gates
-        })
-        .catch(err => console.log(err))
-      },
-
-      getColor (gate_state) {
-        if (gate_state) return 'green'
-        else return 'red'
-      },
-
-      editItem (item) {
-        this.editedIndex = this.devices.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialog = true
-      },
-
-      deleteItem (item) {
-        this.editedIndex = this.devices.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialogDelete = true
-      },
-
-      deleteItemConfirm () {
-        // remove from database
-        this.removeDevice(this.editedItem)
-
-        // remove from frontend table
-        this.devices.splice(this.editedIndex, 1)
-        this.closeDelete()
-      },
-
-      close () {
-        this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-      closeDelete () {
-        this.dialogDelete = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-      save () {
-        if (this.editedIndex > -1) {
-          Object.assign(this.devices[this.editedIndex], this.editedItem)
-        } else {
-          this.devices.push(this.editedItem)
-        }
-        // デバイスの追加
-        this.addDevice(this.editedItem)
-
-        this.close()
-      },
+      select_gates.forEach(gate => this.gates.push({
+        id: gate.id,
+        detail: {
+          gate_id: gate.gate_id,
+          name: gate.name,
+        },
+      }))
+      // console.log(this.users)
     },
-  }
+
+    getColor (gate_state) {
+      if (gate_state) return 'green'
+      else return 'red'
+    },
+
+    editItem (item) {
+      this.editedIndex = this.devices.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+      this.dialog = true
+    },
+
+    deleteItem (item) {
+      this.editedIndex = this.devices.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+      this.dialogDelete = true
+    },
+
+    // DELETE
+    async deleteItemConfirm () {
+      // backend
+      // this.removeDevice(this.editedItem)
+
+      const targetItem = await DataStore.query(Device, this.devices[this.editedIndex].id)
+      DataStore.delete(targetItem)
+      console.log(`Item【${targetItem.device_id}】deleted.`)
+
+      // frontend
+      this.devices.splice(this.editedIndex, 1)
+      this.closeDelete()
+    },
+
+    close () {
+      this.dialog = false
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+      })
+    },
+
+    closeDelete () {
+      this.dialogDelete = false
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+      })
+    },
+
+    async save () {
+      // UPDATE
+      if (this.editedIndex > -1) {
+        // Object.assign(this.devices[this.editedIndex], this.editedItem)
+
+        // backend
+        const targetItem = await DataStore.query(Device, this.devices[this.editedIndex].id)
+
+        var updatedItem = Device.copyOf(targetItem, updated => {
+          // 不改device_id，因此在修改的UI中也禁用掉了device_id输入框
+          updated.is_entrance = this.editedItem.is_entrance
+          updated.is_using = this.editedItem.is_using
+          updated.last_alert_time = this.editedItem.last_alert_time
+          updated.gateID = this.editedItem.gateID
+        })
+
+        await DataStore.save(updatedItem)
+        console.log(`Item【${targetItem.device_id}】updated.`)
+
+        // frontend
+        this.devices.splice(this.editedIndex, 1, updatedItem)
+
+      // CREATE
+      } else {
+        // backend
+        const createdItem = await DataStore.save(
+          new Device(this.editedItem)
+        )
+        console.log(`Item【${this.editedItem.device_id}】created.`)
+        // console.log(`createdItem_id = ${createdItem.id}`)
+
+        // frontend
+        this.devices.push(createdItem)
+        console.log(this.devices)
+        // this.devices.push(this.editedItem)
+      }
+      // デバイスの追加
+      // this.addDevice(this.editedItem)
+      this.close()
+    },
+
+    // find specific item in object array
+    showDetailByID (id) {
+      let obj = this.gates.find(o => o.id === id)
+      if (obj !== undefined) {
+        return `${ obj.detail.gate_id } - ${ obj.detail.name }`
+      } else {
+        return ''
+      }
+    },
+  },
+}
 </script>

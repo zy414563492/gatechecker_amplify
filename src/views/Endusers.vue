@@ -50,6 +50,7 @@
                         v-model="editedItem.user_id"
                         label="ユーザーID"
                         outlined
+                        :disabled="editedIndex !== -1"
                       ></v-text-field>
                     </v-col>
                   </v-row>
@@ -128,127 +129,181 @@
 </template>
 
 <script>
-  export default {
-    data: () => ({
-      name: 'エンドユーザー',
-      dialog: false,
-      dialogDelete: false,
-      headers: [
-        { text: 'ユーザーID', value: 'user_id' },
-        { text: '名称', value: 'name' },
-        { text: '操作', value: 'actions', sortable: false },
-      ],
-      users: [],
-      editedIndex: -1,
-      editedItem: {
-        user_id: null,
-        name: null,
-      },
-      defaultItem: {
-        user_id: null,
-        name: null,
-      },
-    }),
+import { DataStore } from '@aws-amplify/datastore';
+import { User } from '@/models';
+import { mapGetters } from "vuex";
 
-    computed: {
-      formTitle () {
-        return this.editedIndex === -1 ? 'エンドユーザーを追加' : 'エンドユーザーを更新'
-      },
+export default {
+  data: () => ({
+    name: 'エンドユーザー',
+    dialog: false,
+    dialogDelete: false,
+    headers: [
+      { text: 'ユーザーID', value: 'user_id' },
+      { text: '名称', value: 'name' },
+      { text: '操作', value: 'actions', sortable: false },
+    ],
+    users: [],
+    editedIndex: -1,
+    editedItem: {
+      user_id: null,
+      name: null,
+    },
+    defaultItem: {
+      // id: null,
+      // createdAt: null,
+      // updatedAt: null,
+      // user_id: null,
+      // name: null,
+      // _deleted: null,
+      // _lastChangedAt: null,
+      // _version: null
+      user_id: null,
+      name: null,
+    },
+  }),
+
+  computed: {
+    formTitle () {
+      return this.editedIndex === -1 ? 'エンドユーザーを追加' : 'エンドユーザーを更新'
+    }
+  },
+
+  watch: {
+    dialog (val) {
+      val || this.close()
+    },
+    dialogDelete (val) {
+      val || this.closeDelete()
+    },
+  },
+
+  created () {
+    this.initialize()
+  },
+
+  methods: {
+    // async initialize () {
+    //   await this.$axios
+    //   .post('/api/get_users')
+    //   .then((res) => {
+    //     console.log(res.data)
+    //     this.users = res.data.user_list
+    //   })
+    //   .catch(err => console.log(err))
+    // },
+
+    async initialize () {
+      var init_users = await DataStore.query(User)
+      init_users.forEach(user => this.users.push(user))
+      console.log(this.users)
     },
 
-    watch: {
-      dialog (val) {
-        val || this.close()
-      },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
+    async addUser (item) {
+      await this.$axios({
+        method: 'post',
+        url: '/api/add_user',
+        withCredentials: true,
+        data: JSON.stringify(item)
+      }).then((res) => {
+        console.log(res)
+      })
     },
 
-    created () {
-      this.initialize()
+    async removeUser (item) {
+      await this.$axios({
+        method: 'post',
+        url: '/api/remove_user',
+        withCredentials: true,
+        data: JSON.stringify(item)
+      }).then((res) => {
+        console.log(res)
+      })
     },
 
-    methods: {
-      async initialize () {
-        await this.$axios
-        .post('/api/get_users')
-        .then((res) => {
-          console.log(res.data)
-          this.users = res.data.user_list
-        })
-        .catch(err => console.log(err))
-      },
-
-      async addUser (item) {
-        await this.$axios({
-          method: 'post',
-          url: '/api/add_user',
-          withCredentials: true,
-          data: JSON.stringify(item)
-        }).then((res) => {
-          console.log(res)
-        })
-      },
-
-      async removeUser (item) {
-        await this.$axios({
-          method: 'post',
-          url: '/api/remove_user',
-          withCredentials: true,
-          data: JSON.stringify(item)
-        }).then((res) => {
-          console.log(res)
-        })
-      },
-
-      editItem (item) {
-        this.editedIndex = this.users.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialog = true
-      },
-
-      deleteItem (item) {
-        this.editedIndex = this.users.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialogDelete = true
-      },
-
-      deleteItemConfirm () {
-        // remove from database
-        this.removeUser(this.editedItem)
-
-        // remove from frontend table
-        this.users.splice(this.editedIndex, 1)
-        this.closeDelete()
-      },
-
-      close () {
-        this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-      closeDelete () {
-        this.dialogDelete = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-      save () {
-        if (this.editedIndex > -1) {
-          Object.assign(this.users[this.editedIndex], this.editedItem)
-        } else {
-          this.users.push(this.editedItem)
-        }
-        // エンドユーザーの追加
-        this.addUser(this.editedItem)
-        this.close()
-      },
+    editItem (item) {
+      this.editedIndex = this.users.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+      this.dialog = true
     },
-  }
+
+    deleteItem (item) {
+      this.editedIndex = this.users.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+      this.dialogDelete = true
+    },
+
+    // DELETE
+    async deleteItemConfirm () {
+      // backend
+      // this.removeUser(this.editedItem)
+
+      const targetItem = await DataStore.query(User, this.users[this.editedIndex].id)
+      DataStore.delete(targetItem)
+      console.log(`Item【${targetItem.user_id}】deleted.`)
+
+      // frontend
+      this.users.splice(this.editedIndex, 1)
+      this.closeDelete()
+    },
+
+    close () {
+      this.dialog = false
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+      })
+    },
+
+    closeDelete () {
+      this.dialogDelete = false
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+      })
+    },
+
+    async save () {
+      // UPDATE
+      if (this.editedIndex > -1) {
+        // backend
+        const targetItem = await DataStore.query(User, this.users[this.editedIndex].id)
+
+        var updatedItem = User.copyOf(targetItem, updated => {
+          // 不改user_id只改name，因此在修改的UI中也禁用掉了user_id输入框
+          updated.name = this.editedItem.name
+        })
+
+        await DataStore.save(updatedItem)
+        console.log(`Item【${targetItem.user_id}】updated.`)
+
+        // frontend
+        this.users.splice(this.editedIndex, 1, updatedItem)
+
+      // CREATE
+      } else {
+        // backend
+        const createdItem = await DataStore.save(
+          new User(this.editedItem)
+          // new User({
+          //   "user_id": this.editedItem.user_id,
+          //   // "Buildings": [],
+          //   "name": this.editedItem.name
+          // })
+        )
+        console.log(`Item【${this.editedItem.user_id}】created.`)
+        // console.log(`createdItem_id = ${createdItem.id}`)
+
+        // frontend
+        this.users.push(createdItem)
+        // this.users.push(this.editedItem)
+        console.log(this.users)
+      }
+
+      // エンドユーザーの追加
+      // this.addUser(this.editedItem)
+      this.close()
+    },
+  },
+}
 </script>

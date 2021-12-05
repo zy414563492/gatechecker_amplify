@@ -4,8 +4,26 @@ import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify'
 
+import {
+  applyPolyfills,
+  defineCustomElements,
+} from '@aws-amplify/ui-components/loader';
+
+import Amplify from 'aws-amplify'
+import awsconfig from './aws-exports'
+import "@aws-amplify/ui-vue/styles.css"
+
+applyPolyfills().then(() => {
+  defineCustomElements(window);
+});
+
+Vue.config.ignoredElements = [/amplify-\w*/];
+
 import axios from 'axios'
 Vue.prototype.$axios = axios // 全局注册，使用方法为:this.$axios
+
+
+Amplify.configure(awsconfig)
 
 Vue.config.productionTip = false
 

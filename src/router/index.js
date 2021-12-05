@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../components/Home.vue'
 import Login from '../components/Login.vue'
+import LoginAdmin from '../components/LoginAdmin.vue'
 import store from "../store";
 
 Vue.use(VueRouter)
@@ -41,6 +42,11 @@ const routes = [
     path: '/status',
     name: 'status',
     component: () => import('@/views/Status.vue')
+  },
+  {
+    path: '/login_admin',
+    name: 'login_admin',
+    component: LoginAdmin,
   },
   {
     path: '/login',

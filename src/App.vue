@@ -19,7 +19,11 @@
           target="_blank"
           text
         >
-          <span class="mr-2">Log Out</span>
+        <!-- <v-btn
+          href="/login_admin"
+          text
+        > -->
+          <span class="mr-2">LOG IN</span>
           <v-icon>mdi-open-in-new</v-icon>
         </v-btn>
       </v-app-bar>
@@ -130,6 +134,7 @@ export default {
     items_client: [
       // { title: 'ログイン', icon: 'mdi-login-variant', link: '/login' },
       { title: '現場確認', icon: 'mdi-eye-outline', link: '/login' },
+      { title: 'TEST', icon: 'mdi-eye-outline', link: '/login_admin' },
     ],
     right: null,
   }),

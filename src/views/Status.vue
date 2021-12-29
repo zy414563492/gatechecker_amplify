@@ -71,101 +71,172 @@
 </template>
 
 <script>
-  export default {
-    data: () => ({
-      name: '全体確認',
-      dialogDelete: false,
 
-      headers: [
-        { text: '施設', value: 'name'},
-        { text: 'エンドユーザー', value: 'to_user'},
-        { text: '累計入場者数', value: 'count_enter'},
-        { text: '累計退場者数', value: 'count_exit'},
-        { text: '今施設内にいる人数', value: 'count_inside'},
-        { text: 'ブラックリスト検出', value: 'has_blacklist'},
-        { text: '操作', value: 'actions', sortable: false },
-      ],
-      count_info: [],
-      editedIndex: -1,
-      editedItem: {
-        name: null,
-        to_user: null,
-        count_enter: null,
-        count_exit: null,
-        count_inside: null,
-        has_blacklist: null,
-      },
-      defaultItem: {
-        name: null,
-        to_user: null,
-        count_enter: null,
-        count_exit: null,
-        count_inside: null,
-        has_blacklist: null,
-      },
-      
-    }),
+import { API, graphqlOperation } from 'aws-amplify'
+import { createBuilding } from '../graphql/mutations'
+import { getBuilding, listBuildings, countInfo, clearAlarm } from '../graphql/queries'
 
-    computed: {
-      // formTitle () {
-      //   return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-      // },
-    },
 
-    created () {
-      this.initialize()
-    },
-
-    methods: {
-      async initialize () {
-        await this.$axios
-        .post('/api/get_count')
-        .then((res) => {
-          console.log(res.data)
-          this.count_info = res.data.count_info
-        })
-        .catch(err => console.log(err))
-      },
-
-      async clearAlarm (item) {
-        await this.$axios({
-          method: 'post',
-          url: '/api/clear_alarm_by_building_name',
-          withCredentials: true,
-          data: JSON.stringify(item)
-        }).then((res) => {
-          console.log(res)
-        })
-      },
-
-      getIconColor (has_blacklist) {
-        if (has_blacklist) return 'red'
-        else return 'green'
-      },
-
-      deleteItem (item) {
-        this.editedIndex = this.count_info.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialogDelete = true
-      },
-
-      deleteItemConfirm () {
-        // 找到该设施的所有device，更新最近警报时间
-        this.clearAlarm({"building_name": this.count_info[this.editedIndex].name})
-
-        // clear alarm in frontend table
-        this.count_info[this.editedIndex].has_blacklist = false
-        this.closeDelete()
-      },
-
-      closeDelete () {
-        this.dialogDelete = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-    },
+const ListTodosQuery = `
+query searchUsers {
+  listUsers(filter: {_deleted: {ne: true}}) {
+    items {
+      name
+      Buildings(filter: {_deleted: {ne: true}}) {
+        items {
+          name
+          building_id
+          Gates(filter: {_deleted: {ne: true}, is_open: {eq: true}}) {
+            items {
+              Devices(filter: {_deleted: {ne: true}, is_using: {eq: true}}) {
+                items {
+                  Logs(filter: {_deleted: {ne: true}}) {
+                    items {
+                      log_id
+                      time
+                      temperature
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
+}
+`
+
+export default {
+  data: () => ({
+    name: '全体確認',
+    dialogDelete: false,
+
+    headers: [
+      { text: '施設', value: 'name'},
+      { text: 'エンドユーザー', value: 'to_user'},
+      { text: '累計入場者数', value: 'count_enter'},
+      { text: '累計退場者数', value: 'count_exit'},
+      { text: '今施設内にいる人数', value: 'count_inside'},
+      { text: 'ブラックリスト検出', value: 'has_blacklist'},
+      { text: '操作', value: 'actions', sortable: false },
+    ],
+    count_info: [],
+    editedIndex: -1,
+    editedItem: {
+      name: null,
+      to_user: null,
+      count_enter: null,
+      count_exit: null,
+      count_inside: null,
+      has_blacklist: null,
+    },
+    defaultItem: {
+      name: null,
+      to_user: null,
+      count_enter: null,
+      count_exit: null,
+      count_inside: null,
+      has_blacklist: null,
+    },
+    
+  }),
+
+  computed: {
+    // formTitle () {
+    //   return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+    // },
+  },
+
+  created () {
+    this.initialize()
+  },
+
+  methods: {
+    // async initialize () {
+    //   await this.$axios
+    //   .post('/api/get_count')
+    //   .then((res) => {
+    //     console.log(res.data)
+    //     this.count_info = res.data.count_info
+    //   })
+    //   .catch(err => console.log(err))
+    // },
+
+    async initialize () {
+      // console.log("####### 000 #######")
+      // await API.graphql(graphqlOperation(getBuilding, {id: "fe70fb27-e7d7-4f18-9f53-9ab578ef9713"}))
+      //   .then(response => {
+      //     // テーブル表示
+      //     const items = [
+      //       {
+      //         id: response.data.getBuilding.building_id,
+      //         name: response.data.getBuilding.name,
+      //         gates: response.data.getBuilding.Gates,
+      //       }
+      //     ]
+      //     console.log("BuildingInfo:\n", items)
+      //   }).catch(error => {
+      //     // テーブルリセット
+      //     // this.items = []
+      //     console.log("テーブルリセット")
+      //   })
+      // console.log("####### 111 #######")
+      
+      // const todos = await API.graphql(graphqlOperation(listBuildings))
+      // console.log(todos)
+      // console.log("####### 222 #######")
+
+      // const todos2 = await API.graphql(graphqlOperation(ListTodosQuery))
+      // console.log(todos2)
+      // console.log("####### 333 #######")
+
+      const count_info = await API.graphql(graphqlOperation(countInfo))
+      this.count_info = count_info
+      // console.log(todos3)
+      // console.log("####### 444 #######")
+    },
+
+    async clearAlarm (item) {
+      await this.$axios({
+        method: 'post',
+        url: '/api/clear_alarm_by_building_name',
+        withCredentials: true,
+        data: JSON.stringify(item)
+      }).then((res) => {
+        console.log(res)
+      })
+    },
+
+    getIconColor (has_blacklist) {
+      if (has_blacklist) return 'red'
+      else return 'green'
+    },
+
+    deleteItem (item) {
+      this.editedIndex = this.count_info.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+      this.dialogDelete = true
+    },
+
+    deleteItemConfirm () {
+      // 找到该设施的所有device，更新最近警报时间
+      this.clearAlarm({"building_name": this.count_info[this.editedIndex].name})
+
+      // clear alarm in frontend table
+      this.count_info[this.editedIndex].has_blacklist = false
+      this.closeDelete()
+    },
+
+    closeDelete () {
+      this.dialogDelete = false
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+      })
+    },
+
+  },
+}
 </script>

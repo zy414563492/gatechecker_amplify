@@ -166,9 +166,8 @@
 </template>
 
 <script>
-import { DataStore } from '@aws-amplify/datastore';
-import { User, Building } from '@/models';
-// import { Build } from '@aws-amplify/ui-components/dist/types/stencil-public-runtime';
+import { DataStore } from '@aws-amplify/datastore'
+import { User, Building } from '@/models'
 
 export default {
   data: () => ({

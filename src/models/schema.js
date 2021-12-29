@@ -76,6 +76,24 @@ export const schema = {
                             {
                                 "allow": "private",
                                 "operations": [
+                                    "read",
+                                    "update",
+                                    "create"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "operations": [
                                     "create",
                                     "update",
                                     "delete",
@@ -163,6 +181,24 @@ export const schema = {
                             {
                                 "allow": "private",
                                 "operations": [
+                                    "read",
+                                    "update",
+                                    "create"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "operations": [
                                     "create",
                                     "update",
                                     "delete",
@@ -242,6 +278,24 @@ export const schema = {
                         "rules": [
                             {
                                 "allow": "private",
+                                "operations": [
+                                    "read",
+                                    "update",
+                                    "create"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
                                 "operations": [
                                     "create",
                                     "update",
@@ -323,6 +377,24 @@ export const schema = {
                             {
                                 "allow": "private",
                                 "operations": [
+                                    "read",
+                                    "update",
+                                    "create"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "operations": [
                                     "create",
                                     "update",
                                     "delete",
@@ -388,6 +460,24 @@ export const schema = {
                         "rules": [
                             {
                                 "allow": "private",
+                                "operations": [
+                                    "read",
+                                    "update",
+                                    "create"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
                                 "operations": [
                                     "create",
                                     "update",

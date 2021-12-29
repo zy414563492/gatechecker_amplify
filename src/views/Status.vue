@@ -165,37 +165,16 @@ export default {
     // },
 
     async initialize () {
-      // console.log("####### 000 #######")
-      // await API.graphql(graphqlOperation(getBuilding, {id: "fe70fb27-e7d7-4f18-9f53-9ab578ef9713"}))
-      //   .then(response => {
-      //     // テーブル表示
-      //     const items = [
-      //       {
-      //         id: response.data.getBuilding.building_id,
-      //         name: response.data.getBuilding.name,
-      //         gates: response.data.getBuilding.Gates,
-      //       }
-      //     ]
-      //     console.log("BuildingInfo:\n", items)
-      //   }).catch(error => {
-      //     // テーブルリセット
-      //     // this.items = []
-      //     console.log("テーブルリセット")
-      //   })
-      // console.log("####### 111 #######")
-      
       // const todos = await API.graphql(graphqlOperation(listBuildings))
       // console.log(todos)
-      // console.log("####### 222 #######")
 
       // const todos2 = await API.graphql(graphqlOperation(ListTodosQuery))
       // console.log(todos2)
-      // console.log("####### 333 #######")
 
-      const count_info = await API.graphql(graphqlOperation(countInfo))
-      this.count_info = count_info
-      // console.log(todos3)
-      // console.log("####### 444 #######")
+      const response = await API.graphql(graphqlOperation(countInfo))
+      const response_obj = JSON.parse(response.data.countInfo)
+      console.log(response_obj.count_info)
+      this.count_info = response_obj.count_info
     },
 
     async clearAlarm (item) {

@@ -117,6 +117,10 @@
 </template>
 
 <script>
+import { API, graphqlOperation } from 'aws-amplify'
+import { countInfo } from '../graphql/queries'
+import { clearAlarm } from '../graphql/mutations'
+
 export default {
   // props: {
   //   user_id: String,
@@ -132,6 +136,7 @@ export default {
       building_id: null,
     },
     count_info: {
+      id: null,
       name: null,
       to_user: null,
       count_enter: null,
@@ -160,15 +165,21 @@ export default {
       this.count_info = count_info
     },
 
+    // async clearAlarm (item) {
+    //   await this.$axios({
+    //     method: 'post',
+    //     url: '/api/clear_alarm_by_building_name',
+    //     withCredentials: true,
+    //     data: JSON.stringify(item)
+    //   }).then((res) => {
+    //     console.log(res)
+    //   })
+    // },
+
     async clearAlarm (item) {
-      await this.$axios({
-        method: 'post',
-        url: '/api/clear_alarm_by_building_name',
-        withCredentials: true,
-        data: JSON.stringify(item)
-      }).then((res) => {
-        console.log(res)
-      })
+      console.log(item)
+      const response = await API.graphql(graphqlOperation(clearAlarm, { building_id: item }))
+      console.log(response.data)
     },
 
     deleteItem () {
@@ -177,7 +188,8 @@ export default {
 
     deleteItemConfirm () {
       // 找到该设施的所有device，更新最近警报时间
-      this.clearAlarm({ "building_name": this.count_info.name })
+      // this.clearAlarm({ "building_name": this.count_info.name })
+      this.clearAlarm(this.count_info.name)
 
       // clear alarm in frontend table
       this.count_info.has_blacklist = false

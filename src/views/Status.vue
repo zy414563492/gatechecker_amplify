@@ -71,10 +71,9 @@
 </template>
 
 <script>
-
 import { API, graphqlOperation } from 'aws-amplify'
-import { createBuilding } from '../graphql/mutations'
-import { getBuilding, listBuildings, countInfo, clearAlarm } from '../graphql/queries'
+import { countInfo } from '../graphql/queries'
+import { clearAlarm } from '../graphql/mutations'
 
 
 const ListTodosQuery = `
@@ -177,15 +176,37 @@ export default {
       this.count_info = response_obj.count_info
     },
 
+    // async clearAlarm (item) {
+    //   await this.$axios({
+    //     method: 'post',
+    //     url: '/api/clear_alarm_by_building_name',
+    //     withCredentials: true,
+    //     data: JSON.stringify(item)
+    //   }).then((res) => {
+    //     console.log(res)
+    //   })
+    // },
+
     async clearAlarm (item) {
-      await this.$axios({
-        method: 'post',
-        url: '/api/clear_alarm_by_building_name',
-        withCredentials: true,
-        data: JSON.stringify(item)
-      }).then((res) => {
-        console.log(res)
-      })
+      // this.count_info.forEach(i => {
+      //   console.log(i.id)
+      // })
+      console.log(item)
+
+      const response = await API.graphql(graphqlOperation(clearAlarm, { building_id: item }))
+      // const response_obj = JSON.parse(response)
+      console.log(response.data)
+
+      // var select_gates = await DataStore.query(Gate)
+
+      // select_gates.forEach(gate => this.gates.push({
+      //   id: gate.id,
+      //   detail: {
+      //     gate_id: gate.gate_id,
+      //     name: gate.name,
+      //   },
+      // }))
+      // console.log(this.users)
     },
 
     getIconColor (has_blacklist) {
@@ -201,7 +222,8 @@ export default {
 
     deleteItemConfirm () {
       // 找到该设施的所有device，更新最近警报时间
-      this.clearAlarm({"building_name": this.count_info[this.editedIndex].name})
+      // this.clearAlarm({"building_name": this.count_info[this.editedIndex].name})
+      this.clearAlarm(this.count_info[this.editedIndex].id)
 
       // clear alarm in frontend table
       this.count_info[this.editedIndex].has_blacklist = false

@@ -43,27 +43,27 @@ const routes = [
     name: 'status',
     component: () => import('@/views/Status.vue')
   },
-  {
-    path: '/login_admin',
-    name: 'login_admin',
-    component: LoginAdmin,
-  },
-  {
-    path: '/login',
-    name: 'login',
-    component: Login,
-    meta: {
-      requireAuth: false
-    }
-  },
-  {
-    path: '/result',
-    name: 'result',
-    component: () => import('@/views/Result.vue'),
-    meta: {
-      requireAuth: true
-    }
-  },
+  // {
+  //   path: '/login_admin',
+  //   name: 'login_admin',
+  //   component: LoginAdmin,
+  // },
+  // {
+  //   path: '/login',
+  //   name: 'login',
+  //   component: Login,
+  //   meta: {
+  //     requireAuth: false
+  //   }
+  // },
+  // {
+  //   path: '/result',
+  //   name: 'result',
+  //   component: () => import('@/views/Result.vue'),
+  //   meta: {
+  //     requireAuth: true
+  //   }
+  // },
 ]
 
 const router = new VueRouter({
@@ -71,19 +71,19 @@ const router = new VueRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next)=>{
-  if (to.matched.some(record => record.meta.requireAuth)) {
-    if (to.path === '/login') { // 如果是登录页面的话，直接next() -->解决注销后的循环执行bug
-      next();
-    } else if (to.path === '/result'){
-      if (from.path === '/login') // 否则 仅在login->result时正常执行跳转
-        next()
-      else
-        next({ path: '/login' });
-    }
-  } else {
-    next();
-  }
-})
+// router.beforeEach((to, from, next)=>{
+//   if (to.matched.some(record => record.meta.requireAuth)) {
+//     if (to.path === '/login') { // 如果是登录页面的话，直接next() -->解决注销后的循环执行bug
+//       next();
+//     } else if (to.path === '/result'){
+//       if (from.path === '/login') // 否则 仅在login->result时正常执行跳转
+//         next()
+//       else
+//         next({ path: '/login' });
+//     }
+//   } else {
+//     next();
+//   }
+// })
 
 export default router

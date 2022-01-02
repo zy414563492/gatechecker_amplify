@@ -7,7 +7,7 @@
         username-alias="email"
         :form-fields.prop="formFields"
       ></amplify-sign-up>
-  </amplify-authenticator>
+    </amplify-authenticator>
   </v-app>
 </template>
 

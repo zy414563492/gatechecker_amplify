@@ -28,11 +28,14 @@ Amplify.configure(awsconfig)
 Vue.config.productionTip = false
 
 // 全局注册组件
-import TopBar from '@/components/TopBar.vue'
-import SideBar from '@/components/SideBar.vue'
+// import TopBar from '@/components/TopBar.vue'
+// import SideBar from '@/components/SideBar.vue'
+import SurroundBars from '@/components/SurroundBars.vue'
 import LinkBar from '@/components/LinkBar.vue'
-Vue.component('top-bar', TopBar)
-Vue.component('side-bar', SideBar)
+
+// Vue.component('top-bar', TopBar)
+// Vue.component('side-bar', SideBar)
+Vue.component('surround-bars', SurroundBars)
 Vue.component('link-bar', LinkBar)
 
 new Vue({

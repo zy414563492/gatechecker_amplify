@@ -6,11 +6,6 @@ export const countInfo = /* GraphQL */ `
     countInfo
   }
 `;
-export const clearAlarm = /* GraphQL */ `
-  query ClearAlarm($building_id: ID!) {
-    clearAlarm(building_id: $building_id)
-  }
-`;
 export const getLog = /* GraphQL */ `
   query GetLog($id: ID!) {
     getLog(id: $id) {

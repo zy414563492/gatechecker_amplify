@@ -1,6 +1,11 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const clearAlarm = /* GraphQL */ `
+  mutation ClearAlarm($building_id: ID!) {
+    clearAlarm(building_id: $building_id)
+  }
+`;
 export const createLog = /* GraphQL */ `
   mutation CreateLog(
     $input: CreateLogInput!

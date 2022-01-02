@@ -9,7 +9,7 @@ import {
   defineCustomElements,
 } from '@aws-amplify/ui-components/loader';
 
-import Amplify from 'aws-amplify'
+import Amplify, { AuthModeStrategyType } from "aws-amplify"
 import awsconfig from './aws-exports'
 import "@aws-amplify/ui-vue/styles.css"
 
@@ -23,7 +23,12 @@ import axios from 'axios'
 Vue.prototype.$axios = axios // 全局注册，使用方法为:this.$axios
 
 
-Amplify.configure(awsconfig)
+Amplify.configure({
+  ...awsconfig,
+  DataStore: {
+    authModeStrategyType: AuthModeStrategyType.MULTI_AUTH
+  },
+})
 
 Vue.config.productionTip = false
 

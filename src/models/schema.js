@@ -78,7 +78,8 @@ export const schema = {
                                 "operations": [
                                     "read",
                                     "update",
-                                    "create"
+                                    "create",
+                                    "delete"
                                 ]
                             },
                             {
@@ -183,7 +184,8 @@ export const schema = {
                                 "operations": [
                                     "read",
                                     "update",
-                                    "create"
+                                    "create",
+                                    "delete"
                                 ]
                             },
                             {
@@ -281,7 +283,8 @@ export const schema = {
                                 "operations": [
                                     "read",
                                     "update",
-                                    "create"
+                                    "create",
+                                    "delete"
                                 ]
                             },
                             {
@@ -379,7 +382,8 @@ export const schema = {
                                 "operations": [
                                     "read",
                                     "update",
-                                    "create"
+                                    "create",
+                                    "delete"
                                 ]
                             },
                             {
@@ -463,7 +467,8 @@ export const schema = {
                                 "operations": [
                                     "read",
                                     "update",
-                                    "create"
+                                    "create",
+                                    "delete"
                                 ]
                             },
                             {

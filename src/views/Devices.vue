@@ -202,6 +202,11 @@
 import { DataStore } from '@aws-amplify/datastore'
 import { Gate, Device } from '@/models'
 
+import { API, graphqlOperation } from 'aws-amplify'
+import { listDevices } from '../graphql/queries'
+import { createDevice } from '../graphql/mutations'
+
+
 export default {
   data: () => ({
     name: 'デバイス',
@@ -405,11 +410,23 @@ export default {
       // CREATE
       } else {
         // backend
-        const createdItem = await DataStore.save(
-          new Device(this.editedItem)
-        )
+        // const createdItem = await DataStore.save(
+        //   new Device(this.editedItem)
+        // )
+        // console.log(`Item【${this.editedItem.device_id}】created.`)
+
+        const createdItem = {
+          id: this.editedItem.device_id,
+          device_id: this.editedItem.device_id,
+          is_entrance: this.editedItem.is_entrance,
+          is_using: this.editedItem.is_using,
+          last_alert_time: this.editedItem.last_alert_time,
+          gateID: this.editedItem.gateID
+        };
+        const response = await API.graphql({ query: createDevice, variables: {input: createdItem}})
+        console.log(response)
         console.log(`Item【${this.editedItem.device_id}】created.`)
-        // console.log(`createdItem_id = ${createdItem.id}`)
+
 
         // frontend
         this.devices.push(createdItem)

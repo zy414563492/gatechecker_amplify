@@ -204,7 +204,7 @@ import { Gate, Device } from '@/models'
 
 import { API, graphqlOperation } from 'aws-amplify'
 import { listDevices } from '../graphql/queries'
-import { createDevice } from '../graphql/mutations'
+import { createDevice, updateDevice, deleteDevice } from '../graphql/mutations'
 
 
 export default {
@@ -240,6 +240,7 @@ export default {
     ],
     editedIndex: -1,
     editedItem: {
+      _version: null,
       device_id: null,
       is_entrance: true,
       is_using: true,
@@ -247,6 +248,7 @@ export default {
       gateID: null,
     },
     defaultItem: {
+      _version: null,
       device_id: null,
       is_entrance: true,
       is_using: true,
@@ -287,10 +289,38 @@ export default {
     // },
 
     async initialize () {
-      var init_devices = await DataStore.query(Device)
+      // DataStore Method
+      // var init_devices = await DataStore.query(Device)
+      // init_devices.forEach(device => this.devices.push(device))
+      // console.log(this.devices)
+
+      // GraphQL Method
+      let filter = {
+        _deleted: {
+          ne: true // _deleted priority != true
+        }
+      }
+      var init_devices_rsp = await API.graphql({ query: listDevices, variables: { filter: filter}})
+      var init_devices = init_devices_rsp.data.listDevices.items
       init_devices.forEach(device => this.devices.push(device))
       console.log(this.devices)
+
     },
+
+    // async refresh () {
+    //   // GraphQL Method
+    //   let filter = {
+    //     _deleted: {
+    //       ne: true // _deleted priority != true
+    //     }
+    //   }
+    //   var init_devices_rsp = await API.graphql({ query: listDevices, variables: { filter: filter}})
+    //   var init_devices = init_devices_rsp.data.listDevices.items
+
+    //   this.devices = []
+    //   init_devices.forEach(device => this.devices.push(device))
+    //   console.log(this.devices)
+    // },
 
     async addDevice (item) {
       await this.$axios({
@@ -360,9 +390,22 @@ export default {
       // backend
       // this.removeDevice(this.editedItem)
 
-      const targetItem = await DataStore.query(Device, this.devices[this.editedIndex].id)
-      DataStore.delete(targetItem)
-      console.log(`Item【${targetItem.device_id}】deleted.`)
+      // backend
+      // DataStore Method
+      // const targetItem = await DataStore.query(Device, this.devices[this.editedIndex].id)
+      // DataStore.delete(targetItem)
+      // console.log(`Item【${targetItem.device_id}】deleted.`)
+
+      // backend
+      // GraphQL Method
+      const deleteItem = {
+        id: this.devices[this.editedIndex].id,
+        _version: this.devices[this.editedIndex]._version
+      }
+      const response = await API.graphql({ query: deleteDevice, variables: {input: deleteItem}})
+      var deletedDevice = response.data.deleteDevice
+      console.log(deletedDevice)
+      console.log(`Item【${this.editedItem.device_id}】deleted.`)
 
       // frontend
       this.devices.splice(this.editedIndex, 1)
@@ -391,31 +434,54 @@ export default {
         // Object.assign(this.devices[this.editedIndex], this.editedItem)
 
         // backend
-        const targetItem = await DataStore.query(Device, this.devices[this.editedIndex].id)
+        // DataStore Method
+        // const targetItem = await DataStore.query(Device, this.devices[this.editedIndex].id)
 
-        var updatedItem = Device.copyOf(targetItem, updated => {
-          // 不改device_id，因此在修改的UI中也禁用掉了device_id输入框
-          updated.is_entrance = this.editedItem.is_entrance
-          updated.is_using = this.editedItem.is_using
-          updated.last_alert_time = this.editedItem.last_alert_time
-          updated.gateID = this.editedItem.gateID
-        })
+        // var updatedItem = Device.copyOf(targetItem, updated => {
+        //   // 不改device_id，因此在修改的UI中也禁用掉了device_id输入框
+        //   updated.is_entrance = this.editedItem.is_entrance
+        //   updated.is_using = this.editedItem.is_using
+        //   updated.last_alert_time = this.editedItem.last_alert_time
+        //   updated.gateID = this.editedItem.gateID
+        // })
 
-        await DataStore.save(updatedItem)
-        console.log(`Item【${targetItem.device_id}】updated.`)
+        // await DataStore.save(updatedItem)
+        // console.log(`Item【${targetItem.device_id}】updated.`)
+
+
+        // backend
+        // GraphQL Method
+        console.log(this.devices[this.editedIndex].id)
+        const updateItem = {
+          id: this.devices[this.editedIndex].id,
+          device_id: this.editedItem.device_id,
+          _version: this.devices[this.editedIndex]._version,
+          is_entrance: this.editedItem.is_entrance,
+          is_using: this.editedItem.is_using,
+          last_alert_time: this.editedItem.last_alert_time,
+          gateID: this.editedItem.gateID
+        }
+        const response = await API.graphql({ query: updateDevice, variables: {input: updateItem}})
+        var updatedDevice = response.data.updateDevice
+        console.log(updatedDevice)
+        console.log(`Item【${this.editedItem.device_id}】updated.`)
 
         // frontend
-        this.devices.splice(this.editedIndex, 1, updatedItem)
+        // this.devices.splice(this.editedIndex, 1, updatedItem)
+        this.devices.splice(this.editedIndex, 1, updatedDevice)
 
       // CREATE
       } else {
         // backend
+        // DataStore Method
         // const createdItem = await DataStore.save(
         //   new Device(this.editedItem)
         // )
         // console.log(`Item【${this.editedItem.device_id}】created.`)
 
-        const createdItem = {
+        // backend
+        // GraphQL Method
+        const createItem = {
           id: this.editedItem.device_id,
           device_id: this.editedItem.device_id,
           is_entrance: this.editedItem.is_entrance,
@@ -423,13 +489,14 @@ export default {
           last_alert_time: this.editedItem.last_alert_time,
           gateID: this.editedItem.gateID
         };
-        const response = await API.graphql({ query: createDevice, variables: {input: createdItem}})
-        console.log(response)
+        const response = await API.graphql({ query: createDevice, variables: {input: createItem}})
+        var createdDevice = response.data.createDevice
+        console.log(createdDevice)
         console.log(`Item【${this.editedItem.device_id}】created.`)
 
-
         // frontend
-        this.devices.push(createdItem)
+        // this.devices.push(createdItem)
+        this.devices.push(createdDevice)
         console.log(this.devices)
         // this.devices.push(this.editedItem)
       }

@@ -222,6 +222,10 @@
 import { DataStore } from '@aws-amplify/datastore'
 import { Device, Log } from '@/models'
 
+import { API, graphqlOperation } from 'aws-amplify'
+import { listLogs } from '../graphql/queries'
+import { createLog, updateLog, deleteLog } from '../graphql/mutations'
+
 export default {
   data: () => ({
     name: '検温記録',
@@ -300,7 +304,19 @@ export default {
     // },
 
     async initialize () {
-      var init_logs = await DataStore.query(Log)
+      // DataStore Method
+      // var init_logs = await DataStore.query(Log)
+      // init_logs.forEach(log => this.logs.push(log))
+      // console.log(this.logs)
+
+      // GraphQL Method
+      let filter = {
+        _deleted: {
+          ne: true // _deleted priority != true
+        }
+      }
+      var init_logs_rsp = await API.graphql({ query: listLogs, variables: { filter: filter}})
+      var init_logs = init_logs_rsp.data.listLogs.items
       init_logs.forEach(log => this.logs.push(log))
       console.log(this.logs)
     },
@@ -413,9 +429,23 @@ export default {
       // backend
       // this.removeLog(this.editedItem)
 
-      const targetItem = await DataStore.query(Log, this.logs[this.editedIndex].id)
-      DataStore.delete(targetItem)
-      console.log(`Item【${targetItem.log_id}】deleted.`)
+      // backend
+      // DataStore Method
+      // const targetItem = await DataStore.query(Log, this.logs[this.editedIndex].id)
+      // DataStore.delete(targetItem)
+      // console.log(`Item【${targetItem.log_id}】deleted.`)
+
+      // backend
+      // GraphQL Method
+      const deleteItem = {
+        id: this.logs[this.editedIndex].id,
+        _version: this.logs[this.editedIndex]._version
+      }
+      const response = await API.graphql({ query: deleteLog, variables: {input: deleteItem}})
+      var deletedLog = response.data.deleteLog
+      console.log(deletedLog)
+      console.log(`Item【${this.editedItem.log_id}】deleted.`)
+
 
       // frontend
       this.logs.splice(this.editedIndex, 1)
@@ -442,41 +472,75 @@ export default {
       // UPDATE
       if (this.editedIndex > -1) {
         // Object.assign(this.logs[this.editedIndex], this.editedItem)
+
         // backend
-        const targetItem = await DataStore.query(Log, this.logs[this.editedIndex].id)
+        // DataStore Method
+        // const targetItem = await DataStore.query(Log, this.logs[this.editedIndex].id)
+        // var updatedItem = Log.copyOf(targetItem, updated => {
+        //   // 不改log_id，因此在修改的UI中也禁用掉了log_id输入框
+        //   updated.temperature = Number(this.editedItem.temperature)
+        //   updated.time = this.editedItem.time
+        //   updated.is_blacklist = this.editedItem.is_blacklist
+        //   updated.deviceID = this.editedItem.deviceID
+        // })
+        // await DataStore.save(updatedItem)
+        // console.log(`Item【${targetItem.log_id}】updated.`)
 
-        var updatedItem = Log.copyOf(targetItem, updated => {
-          // 不改log_id，因此在修改的UI中也禁用掉了log_id输入框
-          updated.temperature = Number(this.editedItem.temperature)
-          updated.time = this.editedItem.time
-          updated.is_blacklist = this.editedItem.is_blacklist
-          updated.deviceID = this.editedItem.deviceID
-        })
-
-        await DataStore.save(updatedItem)
-        console.log(`Item【${targetItem.log_id}】updated.`)
+        // backend
+        // GraphQL Method
+        const updateItem = {
+          id: this.logs[this.editedIndex].id,
+          _version: this.logs[this.editedIndex]._version,
+          temperature: Number(this.editedItem.temperature),
+          time: this.editedItem.time,
+          is_blacklist: this.editedItem.is_blacklist,
+          deviceID: this.editedItem.deviceID
+        }
+        const response = await API.graphql({ query: updateLog, variables: {input: updateItem}})
+        var updatedLog = response.data.updateLog
+        console.log(updatedLog)
+        console.log(`Item【${this.editedItem.log_id}】updated.`)
 
         // frontend
-        this.logs.splice(this.editedIndex, 1, updatedItem)
+        // this.logs.splice(this.editedIndex, 1, updatedItem)
+        this.logs.splice(this.editedIndex, 1, updatedLog)
 
       // CREATE
       } else {
         // backend
-        const createdItem = await DataStore.save(
-          // new Log(this.editedItem)
-          new Log({
-            "log_id": this.editedItem.log_id,
-            "temperature": Number(this.editedItem.temperature),
-            "time": this.editedItem.time,
-            "is_blacklist": this.editedItem.is_blacklist,
-            "deviceID": this.editedItem.deviceID,
-          })
-        )
+        // DataStore Method
+        // const createdItem = await DataStore.save(
+        //   // new Log(this.editedItem)
+        //   new Log({
+        //     "log_id": this.editedItem.log_id,
+        //     "temperature": Number(this.editedItem.temperature),
+        //     "time": this.editedItem.time,
+        //     "is_blacklist": this.editedItem.is_blacklist,
+        //     "deviceID": this.editedItem.deviceID,
+        //   })
+        // )
+        // console.log(`Item【${this.editedItem.log_id}】created.`)
+        // // console.log(`createdItem_id = ${createdItem.id}`)
+
+
+        // backend
+        // GraphQL Method
+        const createItem = {
+          log_id: this.editedItem.log_id,
+          temperature: Number(this.editedItem.temperature),
+          time: this.editedItem.time,
+          is_blacklist: this.editedItem.is_blacklist,
+          deviceID: this.editedItem.deviceID
+        };
+        const response = await API.graphql({ query: createLog, variables: {input: createItem}})
+        var createdLog = response.data.createLog
+        console.log(createdLog)
         console.log(`Item【${this.editedItem.log_id}】created.`)
-        // console.log(`createdItem_id = ${createdItem.id}`)
+
 
         // frontend
-        this.logs.push(createdItem)
+        // this.logs.push(createdItem)
+        this.logs.push(createdLog)
         console.log(this.logs)
         // this.logs.push(this.editedItem)
       }

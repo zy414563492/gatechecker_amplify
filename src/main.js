@@ -10,8 +10,20 @@ import {
 } from '@aws-amplify/ui-components/loader';
 
 import Amplify, { AuthModeStrategyType } from "aws-amplify"
+import AWSAppSyncClient, { AUTH_TYPE } from 'aws-appsync'
 import awsconfig from './aws-exports'
 import "@aws-amplify/ui-vue/styles.css"
+
+
+// 设置全局访问模式为API_KEY
+Vue.prototype.$client = new AWSAppSyncClient({
+  url: awsconfig.aws_appsync_graphqlEndpoint,
+  region: awsconfig.aws_appsync_region,
+  auth: {
+    type: AUTH_TYPE.API_KEY,
+    apiKey: awsconfig.aws_appsync_apiKey,
+  },
+})
 
 applyPolyfills().then(() => {
   defineCustomElements(window);
@@ -32,16 +44,6 @@ Amplify.configure({
 
 Vue.config.productionTip = false
 
-// 全局注册组件
-// import TopBar from '@/components/TopBar.vue'
-// import SideBar from '@/components/SideBar.vue'
-import SurroundBars from '@/components/SurroundBars.vue'
-import LinkBar from '@/components/LinkBar.vue'
-
-// Vue.component('top-bar', TopBar)
-// Vue.component('side-bar', SideBar)
-Vue.component('surround-bars', SurroundBars)
-Vue.component('link-bar', LinkBar)
 
 new Vue({
   router,

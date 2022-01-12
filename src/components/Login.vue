@@ -55,14 +55,8 @@
 
 <script>
 // import { API, graphqlOperation } from 'aws-amplify'
-import { Auth, API, graphqlOperation } from 'aws-amplify'
 import { countInfo } from '../graphql/queries'
-import store from '../store'
-
-import { DataStore } from '@aws-amplify/datastore'
-import { User } from '@/models'
-
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 
 
 export default {

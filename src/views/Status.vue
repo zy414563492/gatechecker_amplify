@@ -237,7 +237,6 @@ export default {
         this.editedIndex = -1
       })
     },
-
   },
 }
 </script>

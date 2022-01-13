@@ -10,20 +10,20 @@ import {
 } from '@aws-amplify/ui-components/loader';
 
 import Amplify, { AuthModeStrategyType } from "aws-amplify"
-import AWSAppSyncClient, { AUTH_TYPE } from 'aws-appsync'
+// import AWSAppSyncClient, { AUTH_TYPE } from 'aws-appsync'
 import awsconfig from './aws-exports'
 import "@aws-amplify/ui-vue/styles.css"
 
 
-// 设置全局访问模式为API_KEY
-Vue.prototype.$client = new AWSAppSyncClient({
-  url: awsconfig.aws_appsync_graphqlEndpoint,
-  region: awsconfig.aws_appsync_region,
-  auth: {
-    type: AUTH_TYPE.API_KEY,
-    apiKey: awsconfig.aws_appsync_apiKey,
-  },
-})
+// // 设置全局访问模式为API_KEY
+// Vue.prototype.$client = new AWSAppSyncClient({
+//   url: awsconfig.aws_appsync_graphqlEndpoint,
+//   region: awsconfig.aws_appsync_region,
+//   auth: {
+//     type: AUTH_TYPE.API_KEY,
+//     apiKey: awsconfig.aws_appsync_apiKey,
+//   },
+// })
 
 applyPolyfills().then(() => {
   defineCustomElements(window);

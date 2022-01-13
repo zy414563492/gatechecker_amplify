@@ -56,7 +56,7 @@
 <script>
 // import { API, graphqlOperation } from 'aws-amplify'
 import { countInfo } from '../graphql/queries'
-import { gql } from 'graphql-tag'
+// import { gql } from 'graphql-tag'
 
 
 export default {

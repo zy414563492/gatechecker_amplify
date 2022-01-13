@@ -13,6 +13,8 @@ import Amplify, { AuthModeStrategyType } from "aws-amplify"
 import awsconfig from './aws-exports'
 import "@aws-amplify/ui-vue/styles.css"
 
+import { gql } from 'graphql-tag'
+
 applyPolyfills().then(() => {
   defineCustomElements(window);
 });
@@ -21,6 +23,7 @@ Vue.config.ignoredElements = [/amplify-\w*/];
 
 import axios from 'axios'
 Vue.prototype.$axios = axios // 全局注册，使用方法为:this.$axios
+
 
 Amplify.configure({
   ...awsconfig,

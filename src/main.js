@@ -13,7 +13,7 @@ import Amplify, { AuthModeStrategyType } from "aws-amplify"
 import awsconfig from './aws-exports'
 import "@aws-amplify/ui-vue/styles.css"
 
-import { gql } from 'graphql-tag'
+// import { gql } from 'graphql-tag'
 
 applyPolyfills().then(() => {
   defineCustomElements(window);

@@ -181,6 +181,11 @@
 import { DataStore } from '@aws-amplify/datastore'
 import { Building, Gate } from '@/models'
 
+import { API, graphqlOperation } from 'aws-amplify'
+import { listGates } from '../graphql/queries'
+import { createGate, updateGate, deleteGate } from '../graphql/mutations'
+
+
 export default {
   data: () => ({
     name: 'ゲート',
@@ -204,17 +209,19 @@ export default {
     // },
     gates: [],
     gate_state: [
-      {state: true, state_name:'Opening'},
-      {state: false, state_name:'Closed'}
+      { state: true, state_name:'Opening' },
+      { state: false, state_name:'Closed' }
     ],
     editedIndex: -1,
     editedItem: {
+      _version: null,
       gate_id: null,
       name: null,
       is_open: true,
       buildingID: null,
     },
     defaultItem: {
+      _version: null,
       gate_id: null,
       name: null,
       is_open: true,
@@ -254,7 +261,19 @@ export default {
     // },
 
     async initialize () {
-      var init_gates = await DataStore.query(Gate)
+      // DataStore Method
+      // var init_gates = await DataStore.query(Gate)
+      // init_gates.forEach(gate => this.gates.push(gate))
+      // console.log(this.gates)
+
+      // GraphQL Method
+      let filter = {
+        _deleted: {
+          ne: true // _deleted priority != true
+        }
+      }
+      var init_gates_rsp = await API.graphql({ query: listGates, variables: { filter: filter}})
+      var init_gates = init_gates_rsp.data.listGates.items
       init_gates.forEach(gate => this.gates.push(gate))
       console.log(this.gates)
     },
@@ -327,9 +346,23 @@ export default {
       // backend
       // this.removeGate(this.editedItem)
 
-      const targetItem = await DataStore.query(Gate, this.gates[this.editedIndex].id)
-      DataStore.delete(targetItem)
-      console.log(`Item【${targetItem.gate_id}】deleted.`)
+      // backend
+      // DataStore Method
+      // const targetItem = await DataStore.query(Gate, this.gates[this.editedIndex].id)
+      // DataStore.delete(targetItem)
+      // console.log(`Item【${targetItem.gate_id}】deleted.`)
+
+      // backend
+      // GraphQL Method
+      const deleteItem = {
+        id: this.gates[this.editedIndex].id,
+        _version: this.gates[this.editedIndex]._version
+      }
+      const response = await API.graphql({ query: deleteGate, variables: {input: deleteItem}})
+      var deletedGate = response.data.deleteGate
+      console.log(deletedGate)
+      console.log(`Item【${this.editedItem.gate_id}】deleted.`)
+
 
       // frontend
       this.gates.splice(this.editedIndex, 1)
@@ -358,32 +391,65 @@ export default {
         // Object.assign(this.gates[this.editedIndex], this.editedItem)
 
         // backend
-        const targetItem = await DataStore.query(Gate, this.gates[this.editedIndex].id)
+        // DataStore Method
+        // const targetItem = await DataStore.query(Gate, this.gates[this.editedIndex].id)
 
-        var updatedItem = Gate.copyOf(targetItem, updated => {
-          // 不改gate_id，因此在修改的UI中也禁用掉了gate_id输入框
-          updated.name = this.editedItem.name
-          updated.is_open = this.editedItem.is_open
-          updated.buildingID = this.editedItem.buildingID
-        })
+        // var updatedItem = Gate.copyOf(targetItem, updated => {
+        //   // 不改gate_id，因此在修改的UI中也禁用掉了gate_id输入框
+        //   updated.name = this.editedItem.name
+        //   updated.is_open = this.editedItem.is_open
+        //   updated.buildingID = this.editedItem.buildingID
+        // })
 
-        await DataStore.save(updatedItem)
-        console.log(`Item【${targetItem.gate_id}】updated.`)
+        // await DataStore.save(updatedItem)
+        // console.log(`Item【${targetItem.gate_id}】updated.`)
+
+
+        // backend
+        // GraphQL Method
+        console.log(this.gates[this.editedIndex].id)
+        const updateItem = {
+          id: this.gates[this.editedIndex].id,
+          _version: this.gates[this.editedIndex]._version,
+          gate_id: this.editedItem.gate_id,
+          name: this.editedItem.name,
+          is_open: this.editedItem.is_open,
+          buildingID: this.editedItem.buildingID
+        }
+        const response = await API.graphql({ query: updateGate, variables: {input: updateItem}})
+        var updatedGate = response.data.updateGate
+        console.log(updatedGate)
+        console.log(`Item【${this.editedItem.gate_id}】updated.`)
 
         // frontend
-        this.gates.splice(this.editedIndex, 1, updatedItem)
+        // this.gates.splice(this.editedIndex, 1, updatedItem)
+        this.gates.splice(this.editedIndex, 1, updatedGate)
 
       // CREATE
       } else {
         // backend
-        const createdItem = await DataStore.save(
-          new Gate(this.editedItem)
-        )
+        // DataStore Method
+        // const createdItem = await DataStore.save(
+        //   new Gate(this.editedItem)
+        // )
+        // console.log(`Item【${this.editedItem.gate_id}】created.`)
+
+        // backend
+        // GraphQL Method
+        const createItem = {
+          gate_id: this.editedItem.gate_id,
+          name: this.editedItem.name,
+          is_open: this.editedItem.is_open,
+          buildingID: this.editedItem.buildingID
+        };
+        const response = await API.graphql({ query: createGate, variables: {input: createItem}})
+        var createdGate = response.data.createGate
+        console.log(createdGate)
         console.log(`Item【${this.editedItem.gate_id}】created.`)
-        // console.log(`createdItem_id = ${createdItem.id}`)
 
         // frontend
-        this.gates.push(createdItem)
+        // this.gates.push(createdItem)
+        this.gates.push(createdGate)
         console.log(this.gates)
         // this.gates.push(this.editedItem)
       }

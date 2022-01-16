@@ -129,8 +129,13 @@
 </template>
 
 <script>
-import { DataStore } from '@aws-amplify/datastore';
-import { User } from '@/models';
+import { DataStore } from '@aws-amplify/datastore'
+import { User } from '@/models'
+
+import { API, graphqlOperation } from 'aws-amplify'
+import { listUsers } from '../graphql/queries'
+import { createUser, updateUser, deleteUser } from '../graphql/mutations'
+
 
 export default {
   data: () => ({
@@ -185,7 +190,19 @@ export default {
     // },
 
     async initialize () {
-      var init_users = await DataStore.query(User)
+      // DataStore Method
+      // var init_users = await DataStore.query(User)
+      // init_users.forEach(user => this.users.push(user))
+      // console.log(this.users)
+
+      // GraphQL Method
+      let filter = {
+        _deleted: {
+          ne: true // _deleted priority != true
+        }
+      }
+      var init_users_rsp = await API.graphql({ query: listUsers, variables: { filter: filter}})
+      var init_users = init_users_rsp.data.listUsers.items
       init_users.forEach(user => this.users.push(user))
       console.log(this.users)
     },
@@ -229,9 +246,22 @@ export default {
       // backend
       // this.removeUser(this.editedItem)
 
-      const targetItem = await DataStore.query(User, this.users[this.editedIndex].id)
-      DataStore.delete(targetItem)
-      console.log(`Item【${targetItem.user_id}】deleted.`)
+      // backend
+      // DataStore Method
+      // const targetItem = await DataStore.query(User, this.users[this.editedIndex].id)
+      // DataStore.delete(targetItem)
+      // console.log(`Item【${targetItem.user_id}】deleted.`)
+
+      // backend
+      // GraphQL Method
+      const deleteItem = {
+        id: this.users[this.editedIndex].id,
+        _version: this.users[this.editedIndex]._version
+      }
+      const response = await API.graphql({ query: deleteUser, variables: {input: deleteItem}})
+      var deletedUser = response.data.deleteUser
+      console.log(deletedUser)
+      console.log(`Item【${this.editedItem.user_id}】deleted.`)
 
       // frontend
       this.users.splice(this.editedIndex, 1)
@@ -258,35 +288,63 @@ export default {
       // UPDATE
       if (this.editedIndex > -1) {
         // backend
-        const targetItem = await DataStore.query(User, this.users[this.editedIndex].id)
+        // DataStore Method
+        // const targetItem = await DataStore.query(User, this.users[this.editedIndex].id)
 
-        var updatedItem = User.copyOf(targetItem, updated => {
-          // 不改user_id只改name，因此在修改的UI中也禁用掉了user_id输入框
-          updated.name = this.editedItem.name
-        })
+        // var updatedItem = User.copyOf(targetItem, updated => {
+        //   // 不改user_id只改name，因此在修改的UI中也禁用掉了user_id输入框
+        //   updated.name = this.editedItem.name
+        // })
 
-        await DataStore.save(updatedItem)
-        console.log(`Item【${targetItem.user_id}】updated.`)
+        // await DataStore.save(updatedItem)
+        // console.log(`Item【${targetItem.user_id}】updated.`)
+
+
+        // backend
+        // GraphQL Method
+        console.log(this.users[this.editedIndex].id)
+        const updateItem = {
+          id: this.users[this.editedIndex].id,
+          _version: this.users[this.editedIndex]._version,
+          user_id: this.editedItem.user_id,
+          name: this.editedItem.name
+        }
+        const response = await API.graphql({ query: updateUser, variables: {input: updateItem}})
+        var updatedUser = response.data.updateUser
+        console.log(updatedUser)
+        console.log(`Item【${this.editedItem.user_id}】updated.`)
 
         // frontend
-        this.users.splice(this.editedIndex, 1, updatedItem)
+        // this.users.splice(this.editedIndex, 1, updatedItem)
+        this.users.splice(this.editedIndex, 1, updatedUser)
 
       // CREATE
       } else {
         // backend
-        const createdItem = await DataStore.save(
-          new User(this.editedItem)
-          // new User({
-          //   "user_id": this.editedItem.user_id,
-          //   // "Buildings": [],
-          //   "name": this.editedItem.name
-          // })
-        )
+        // DataStore Method
+        // const createdItem = await DataStore.save(
+        //   new User(this.editedItem)
+        //   // new User({
+        //   //   "user_id": this.editedItem.user_id,
+        //   //   "name": this.editedItem.name
+        //   // })
+        // )
+        // console.log(`Item【${this.editedItem.user_id}】created.`)
+
+        // backend
+        // GraphQL Method
+        const createItem = {
+          user_id: this.editedItem.user_id,
+          name: this.editedItem.name
+        };
+        const response = await API.graphql({query: createUser, variables: {input: createItem}})
+        var createdUser = response.data.createUser
+        console.log(createdUser)
         console.log(`Item【${this.editedItem.user_id}】created.`)
-        // console.log(`createdItem_id = ${createdItem.id}`)
 
         // frontend
-        this.users.push(createdItem)
+        // this.users.push(createdItem)
+        this.users.push(createdUser)
         console.log(this.users)
         // this.users.push(this.editedItem)
       }

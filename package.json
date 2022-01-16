@@ -12,6 +12,7 @@
     "@aws-amplify/ui-vue": "^2.0.3",
     "aws-amplify": "^4.3.8",
     "aws-appsync": "^4.1.4",
+    "apollo-client": "^2.6.10",
     "aws-sdk": "^2.1046.0",
     "axios": "^0.21.4",
     "core-js": "^3.6.5",

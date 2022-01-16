@@ -199,11 +199,10 @@
 </template>
 
 <script>
-import { DataStore } from '@aws-amplify/datastore'
-import { Gate, Device } from '@/models'
-
+// import { DataStore } from '@aws-amplify/datastore'
+// import { Gate, Device } from '@/models'
 import { API, graphqlOperation } from 'aws-amplify'
-import { listDevices } from '../graphql/queries'
+import { listDevices, listGates } from '../graphql/queries'
 import { createDevice, updateDevice, deleteDevice } from '../graphql/mutations'
 
 
@@ -231,16 +230,15 @@ export default {
     // },
     devices: [],
     direction: [
-      {state: true, state_name:'入口'},
-      {state: false, state_name:'出口'}
+      { state: true, state_name:'入口' },
+      { state: false, state_name:'出口' }
     ],
     device_state: [
-      {state: true, state_name:'使用中'},
-      {state: false, state_name:'一時停止'}
+      { state: true, state_name:'使用中' },
+      { state: false, state_name:'一時停止' }
     ],
     editedIndex: -1,
     editedItem: {
-      _version: null,
       device_id: null,
       is_entrance: true,
       is_using: true,
@@ -248,7 +246,6 @@ export default {
       gateID: null,
     },
     defaultItem: {
-      _version: null,
       device_id: null,
       is_entrance: true,
       is_using: true,
@@ -341,8 +338,25 @@ export default {
     // },
     
     async getGates () {
-      var select_gates = await DataStore.query(Gate)
+      // DataStore Method
+      // var select_gates = await DataStore.query(Gate)
+      // select_gates.forEach(gate => this.gates.push({
+      //   id: gate.id,
+      //   detail: {
+      //     gate_id: gate.gate_id,
+      //     name: gate.name,
+      //   },
+      // }))
+      // console.log(this.users)
 
+      // GraphQL Method
+      let filter = {
+        _deleted: {
+          ne: true // _deleted priority != true
+        }
+      }
+      var select_gates_rsp = await API.graphql({query: listGates, variables: {filter: filter}})
+      var select_gates = select_gates_rsp.data.listGates.items
       select_gates.forEach(gate => this.gates.push({
         id: gate.id,
         detail: {
@@ -350,7 +364,6 @@ export default {
           name: gate.name,
         },
       }))
-      // console.log(this.users)
     },
 
     getColor (gate_state) {
@@ -387,7 +400,7 @@ export default {
         id: this.devices[this.editedIndex].id,
         _version: this.devices[this.editedIndex]._version
       }
-      const response = await API.graphql({ query: deleteDevice, variables: {input: deleteItem}})
+      const response = await API.graphql({query: deleteDevice, variables: {input: deleteItem}})
       var deletedDevice = response.data.deleteDevice
       console.log(deletedDevice)
       console.log(`Item【${this.editedItem.device_id}】deleted.`)
@@ -433,20 +446,19 @@ export default {
         // await DataStore.save(updatedItem)
         // console.log(`Item【${targetItem.device_id}】updated.`)
 
-
         // backend
         // GraphQL Method
         console.log(this.devices[this.editedIndex].id)
         const updateItem = {
           id: this.devices[this.editedIndex].id,
-          device_id: this.editedItem.device_id,
           _version: this.devices[this.editedIndex]._version,
+          device_id: this.editedItem.device_id,
           is_entrance: this.editedItem.is_entrance,
           is_using: this.editedItem.is_using,
           last_alert_time: this.editedItem.last_alert_time,
           gateID: this.editedItem.gateID
         }
-        const response = await API.graphql({ query: updateDevice, variables: {input: updateItem}})
+        const response = await API.graphql({query: updateDevice, variables: {input: updateItem}})
         var updatedDevice = response.data.updateDevice
         console.log(updatedDevice)
         console.log(`Item【${this.editedItem.device_id}】updated.`)

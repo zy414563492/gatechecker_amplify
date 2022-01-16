@@ -219,11 +219,10 @@
 </template>
 
 <script>
-import { DataStore } from '@aws-amplify/datastore'
-import { Device, Log } from '@/models'
-
+// import { DataStore } from '@aws-amplify/datastore'
+// import { Device, Log } from '@/models'
 import { API, graphqlOperation } from 'aws-amplify'
-import { listLogs } from '../graphql/queries'
+import { listLogs, listDevices } from '../graphql/queries'
 import { createLog, updateLog, deleteLog } from '../graphql/mutations'
 
 export default {
@@ -355,8 +354,26 @@ export default {
     // },
 
     async getDevices () {
-      var select_devices = await DataStore.query(Device)
+      // DataStore Method
+      // var select_devices = await DataStore.query(Device)
+      // select_devices.forEach(device => this.devices.push({
+      //   id: device.id,
+      //   detail: {
+      //     device_id: device.device_id,
+      //     is_entrance: device.is_entrance,
+      //     is_using: device.is_using,
+      //   },
+      // }))
+      // console.log(this.users)
 
+      // GraphQL Method
+      let filter = {
+        _deleted: {
+          ne: true // _deleted priority != true
+        }
+      }
+      var select_devices_rsp = await API.graphql({query: listDevices, variables: {filter: filter}})
+      var select_devices = select_devices_rsp.data.listDevices.items
       select_devices.forEach(device => this.devices.push({
         id: device.id,
         detail: {
@@ -365,7 +382,6 @@ export default {
           is_using: device.is_using,
         },
       }))
-      // console.log(this.users)
     },
 
     // get current time
@@ -441,11 +457,10 @@ export default {
         id: this.logs[this.editedIndex].id,
         _version: this.logs[this.editedIndex]._version
       }
-      const response = await API.graphql({ query: deleteLog, variables: {input: deleteItem}})
+      const response = await API.graphql({query: deleteLog, variables: {input: deleteItem}})
       var deletedLog = response.data.deleteLog
       console.log(deletedLog)
       console.log(`Item【${this.editedItem.log_id}】deleted.`)
-
 
       // frontend
       this.logs.splice(this.editedIndex, 1)
@@ -496,7 +511,7 @@ export default {
           is_blacklist: this.editedItem.is_blacklist,
           deviceID: this.editedItem.deviceID
         }
-        const response = await API.graphql({ query: updateLog, variables: {input: updateItem}})
+        const response = await API.graphql({query: updateLog, variables: {input: updateItem}})
         var updatedLog = response.data.updateLog
         console.log(updatedLog)
         console.log(`Item【${this.editedItem.log_id}】updated.`)
@@ -532,7 +547,7 @@ export default {
           is_blacklist: this.editedItem.is_blacklist,
           deviceID: this.editedItem.deviceID
         };
-        const response = await API.graphql({ query: createLog, variables: {input: createItem}})
+        const response = await API.graphql({query: createLog, variables: {input: createItem}})
         var createdLog = response.data.createLog
         console.log(createdLog)
         console.log(`Item【${this.editedItem.log_id}】created.`)

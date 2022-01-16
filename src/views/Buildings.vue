@@ -166,11 +166,10 @@
 </template>
 
 <script>
-import { DataStore } from '@aws-amplify/datastore'
-import { User, Building } from '@/models'
-
+// import { DataStore } from '@aws-amplify/datastore'
+// import { User, Building } from '@/models'
 import { API, graphqlOperation } from 'aws-amplify'
-import { listBuildings } from '../graphql/queries'
+import { listBuildings, listUsers } from '../graphql/queries'
 import { createBuilding, updateBuilding, deleteBuilding } from '../graphql/mutations'
 
 export default {
@@ -293,9 +292,25 @@ export default {
     // },
 
     async getUsers () {
-      var select_users = await DataStore.query(User)
-      // select_users.forEach(user => this.users.push(user.id))
+      // DataStore Method
+      // var select_users = await DataStore.query(User)
+      // select_users.forEach(user => this.users.push({
+      //   id: user.id,
+      //   detail: {
+      //     user_id: user.user_id,
+      //     name: user.name,
+      //   },
+      // }))
+      // console.log(this.users)
 
+      // GraphQL Method
+      let filter = {
+        _deleted: {
+          ne: true // _deleted priority != true
+        }
+      }
+      var select_users_rsp = await API.graphql({query: listUsers, variables: { filter: filter}})
+      var select_users = select_users_rsp.data.listUsers.items
       select_users.forEach(user => this.users.push({
         id: user.id,
         detail: {
@@ -303,7 +318,6 @@ export default {
           name: user.name,
         },
       }))
-      // console.log(this.users)
     },
 
     editItem (item) {
@@ -335,7 +349,7 @@ export default {
         id: this.buildings[this.editedIndex].id,
         _version: this.buildings[this.editedIndex]._version
       }
-      const response = await API.graphql({ query: deleteBuilding, variables: {input: deleteItem}})
+      const response = await API.graphql({query: deleteBuilding, variables: {input: deleteItem}})
       var deletedBuilding = response.data.deleteBuilding
       console.log(deletedBuilding)
       console.log(`Item【${this.editedItem.building_id}】deleted.`)
@@ -392,7 +406,7 @@ export default {
           location: this.editedItem.location,
           userID: this.editedItem.userID
         }
-        const response = await API.graphql({ query: updateBuilding, variables: {input: updateItem}})
+        const response = await API.graphql({query: updateBuilding, variables: {input: updateItem}})
         var updatedBuilding = response.data.updateBuilding
         console.log(updatedBuilding)
         console.log(`Item【${this.editedItem.building_id}】updated.`)

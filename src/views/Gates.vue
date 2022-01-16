@@ -178,11 +178,10 @@
 </template>
 
 <script>
-import { DataStore } from '@aws-amplify/datastore'
-import { Building, Gate } from '@/models'
-
+// import { DataStore } from '@aws-amplify/datastore'
+// import { Building, Gate } from '@/models'
 import { API, graphqlOperation } from 'aws-amplify'
-import { listGates } from '../graphql/queries'
+import { listGates, listBuildings } from '../graphql/queries'
 import { createGate, updateGate, deleteGate } from '../graphql/mutations'
 
 
@@ -312,8 +311,25 @@ export default {
     // },
 
     async getBuildings () {
-      var select_buildings = await DataStore.query(Building)
+      // DataStore Method
+      // var select_buildings = await DataStore.query(Building)
+      // select_buildings.forEach(building => this.buildings.push({
+      //   id: building.id,
+      //   detail: {
+      //     building_id: building.building_id,
+      //     name: building.name,
+      //   },
+      // }))
+      // console.log(this.users)
 
+      // GraphQL Method
+      let filter = {
+        _deleted: {
+          ne: true // _deleted priority != true
+        }
+      }
+      var select_buildings_rsp = await API.graphql({query: listBuildings, variables: {filter: filter}})
+      var select_buildings = select_buildings_rsp.data.listBuildings.items
       select_buildings.forEach(building => this.buildings.push({
         id: building.id,
         detail: {
@@ -321,7 +337,6 @@ export default {
           name: building.name,
         },
       }))
-      // console.log(this.users)
     },
 
     getColor (gate_state) {
@@ -358,11 +373,10 @@ export default {
         id: this.gates[this.editedIndex].id,
         _version: this.gates[this.editedIndex]._version
       }
-      const response = await API.graphql({ query: deleteGate, variables: {input: deleteItem}})
+      const response = await API.graphql({query: deleteGate, variables: {input: deleteItem}})
       var deletedGate = response.data.deleteGate
       console.log(deletedGate)
       console.log(`Item【${this.editedItem.gate_id}】deleted.`)
-
 
       // frontend
       this.gates.splice(this.editedIndex, 1)
@@ -416,7 +430,7 @@ export default {
           is_open: this.editedItem.is_open,
           buildingID: this.editedItem.buildingID
         }
-        const response = await API.graphql({ query: updateGate, variables: {input: updateItem}})
+        const response = await API.graphql({query: updateGate, variables: {input: updateItem}})
         var updatedGate = response.data.updateGate
         console.log(updatedGate)
         console.log(`Item【${this.editedItem.gate_id}】updated.`)
@@ -442,7 +456,7 @@ export default {
           is_open: this.editedItem.is_open,
           buildingID: this.editedItem.buildingID
         };
-        const response = await API.graphql({ query: createGate, variables: {input: createItem}})
+        const response = await API.graphql({query: createGate, variables: {input: createItem}})
         var createdGate = response.data.createGate
         console.log(createdGate)
         console.log(`Item【${this.editedItem.gate_id}】created.`)

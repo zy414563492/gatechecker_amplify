@@ -18,6 +18,7 @@
     "es6-promise": "^4.2.8",
     "graphql": "^16.2.0",
     "graphql-tag": "^2.12.6",
+    "apollo-client": "^3.0.0",
     "ws":"^8.4.2",
     "graphql-ws": "^5.5.5",
     "isomorphic-fetch": "^3.0.0",
@@ -28,7 +29,6 @@
     "vuex": "^3.4.0"
   },
   "devDependencies": {
-    "@apollo/client": "^3.5.7",
     "@vue/cli-plugin-babel": "^4.5.0",
     "@vue/cli-plugin-eslint": "^4.5.0",
     "@vue/cli-service": "^4.5.0",

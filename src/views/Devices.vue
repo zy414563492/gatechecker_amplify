@@ -307,21 +307,6 @@ export default {
 
     },
 
-    // async refresh () {
-    //   // GraphQL Method
-    //   let filter = {
-    //     _deleted: {
-    //       ne: true // _deleted priority != true
-    //     }
-    //   }
-    //   var init_devices_rsp = await API.graphql({ query: listDevices, variables: { filter: filter}})
-    //   var init_devices = init_devices_rsp.data.listDevices.items
-
-    //   this.devices = []
-    //   init_devices.forEach(device => this.devices.push(device))
-    //   console.log(this.devices)
-    // },
-
     async addDevice (item) {
       await this.$axios({
         method: 'post',

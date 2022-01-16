@@ -15,6 +15,7 @@ import "@aws-amplify/ui-vue/styles.css"
 
 import gql from 'graphql-tag'
 
+
 applyPolyfills().then(() => {
   defineCustomElements(window);
 });

@@ -169,6 +169,10 @@
 import { DataStore } from '@aws-amplify/datastore'
 import { User, Building } from '@/models'
 
+import { API, graphqlOperation } from 'aws-amplify'
+import { listBuildings } from '../graphql/queries'
+import { createBuilding, updateBuilding, deleteBuilding } from '../graphql/mutations'
+
 export default {
   data: () => ({
     name: '施設',
@@ -238,7 +242,19 @@ export default {
     // },
 
     async initialize () {
-      var init_buildings = await DataStore.query(Building)
+      // DataStore Method
+      // var init_buildings = await DataStore.query(Building)
+      // init_buildings.forEach(building => this.buildings.push(building))
+      // console.log(this.buildings)
+
+      // GraphQL Method
+      let filter = {
+        _deleted: {
+          ne: true // _deleted priority != true
+        }
+      }
+      var init_buildings_rsp = await API.graphql({ query: listBuildings, variables: { filter: filter}})
+      var init_buildings = init_buildings_rsp.data.listBuildings.items
       init_buildings.forEach(building => this.buildings.push(building))
       console.log(this.buildings)
     },
@@ -307,9 +323,22 @@ export default {
       // backend
       // this.removeBuilding(this.editedItem)
 
-      const targetItem = await DataStore.query(Building, this.buildings[this.editedIndex].id)
-      DataStore.delete(targetItem)
-      console.log(`Item【${targetItem.building_id}】deleted.`)
+      // backend
+      // DataStore Method
+      // const targetItem = await DataStore.query(Building, this.buildings[this.editedIndex].id)
+      // DataStore.delete(targetItem)
+      // console.log(`Item【${targetItem.building_id}】deleted.`)
+
+      // backend
+      // GraphQL Method
+      const deleteItem = {
+        id: this.buildings[this.editedIndex].id,
+        _version: this.buildings[this.editedIndex]._version
+      }
+      const response = await API.graphql({ query: deleteBuilding, variables: {input: deleteItem}})
+      var deletedBuilding = response.data.deleteBuilding
+      console.log(deletedBuilding)
+      console.log(`Item【${this.editedItem.building_id}】deleted.`)
 
       // frontend
       this.buildings.splice(this.editedIndex, 1)
@@ -338,32 +367,65 @@ export default {
         // Object.assign(this.buildings[this.editedIndex], this.editedItem)
 
         // backend
-        const targetItem = await DataStore.query(Building, this.buildings[this.editedIndex].id)
+        // DataStore Method
+        // const targetItem = await DataStore.query(Building, this.buildings[this.editedIndex].id)
 
-        var updatedItem = Building.copyOf(targetItem, updated => {
-          // 不改building_id，因此在修改的UI中也禁用掉了building_id输入框
-          updated.name = this.editedItem.name
-          updated.location = this.editedItem.location
-          updated.userID = this.editedItem.userID
-        })
+        // var updatedItem = Building.copyOf(targetItem, updated => {
+        //   // 不改building_id，因此在修改的UI中也禁用掉了building_id输入框
+        //   updated.name = this.editedItem.name
+        //   updated.location = this.editedItem.location
+        //   updated.userID = this.editedItem.userID
+        // })
 
-        await DataStore.save(updatedItem)
-        console.log(`Item【${targetItem.building_id}】updated.`)
+        // await DataStore.save(updatedItem)
+        // console.log(`Item【${targetItem.building_id}】updated.`)
+
+
+        // backend
+        // GraphQL Method
+        console.log(this.buildings[this.editedIndex].id)
+        const updateItem = {
+          id: this.buildings[this.editedIndex].id,
+          _version: this.buildings[this.editedIndex]._version,
+          building_id: this.editedItem.building_id,
+          name: this.editedItem.name,
+          location: this.editedItem.location,
+          userID: this.editedItem.userID
+        }
+        const response = await API.graphql({ query: updateBuilding, variables: {input: updateItem}})
+        var updatedBuilding = response.data.updateBuilding
+        console.log(updatedBuilding)
+        console.log(`Item【${this.editedItem.building_id}】updated.`)
 
         // frontend
-        this.buildings.splice(this.editedIndex, 1, updatedItem)
+        // this.buildings.splice(this.editedIndex, 1, updatedItem)
+        this.buildings.splice(this.editedIndex, 1, updatedBuilding)
 
       // CREATE
       } else {
         // backend
-        const createdItem = await DataStore.save(
-          new Building(this.editedItem)
-        )
+        // DataStore Method
+        // const createdItem = await DataStore.save(
+        //   new Building(this.editedItem)
+        // )
+        // console.log(`Item【${this.editedItem.building_id}】created.`)
+
+        // backend
+        // GraphQL Method
+        const createItem = {
+          building_id: this.editedItem.building_id,
+          name: this.editedItem.name,
+          location: this.editedItem.location,
+          userID: this.editedItem.userID
+        };
+        const response = await API.graphql({query: createBuilding, variables: {input: createItem}})
+        var createdBuilding = response.data.createBuilding
+        console.log(createdBuilding)
         console.log(`Item【${this.editedItem.building_id}】created.`)
-        // console.log(`createdItem_id = ${createdItem.id}`)
 
         // frontend
-        this.buildings.push(createdItem)
+        // this.buildings.push(createdItem)
+        this.buildings.push(createdBuilding)
         console.log(this.buildings)
         // this.buildings.push(this.editedItem)
       }

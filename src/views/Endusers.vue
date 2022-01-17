@@ -194,7 +194,7 @@ export default {
       // init_users.forEach(user => this.users.push(user))
       // console.log(this.users)
 
-      GraphQL Method
+      // GraphQL Method
       let filter = {
         _deleted: {
           ne: true // _deleted priority != true

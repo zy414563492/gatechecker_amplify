@@ -129,8 +129,8 @@
 </template>
 
 <script>
-// import { DataStore } from '@aws-amplify/datastore'
-// import { User } from '@/models'
+import { DataStore } from '@aws-amplify/datastore'
+import { User } from '@/models'
 import { API, graphqlOperation } from 'aws-amplify'
 import { listUsers } from '../graphql/queries'
 import { createUser, updateUser, deleteUser } from '../graphql/mutations'
@@ -190,20 +190,20 @@ export default {
 
     async initialize () {
       // DataStore Method
-      // var init_users = await DataStore.query(User)
-      // init_users.forEach(user => this.users.push(user))
-      // console.log(this.users)
-
-      // GraphQL Method
-      let filter = {
-        _deleted: {
-          ne: true // _deleted priority != true
-        }
-      }
-      var init_users_rsp = await API.graphql({query: listUsers, variables: { filter: filter}})
-      var init_users = init_users_rsp.data.listUsers.items
+      var init_users = await DataStore.query(User)
       init_users.forEach(user => this.users.push(user))
       console.log(this.users)
+
+      // GraphQL Method
+      // let filter = {
+      //   _deleted: {
+      //     ne: true // _deleted priority != true
+      //   }
+      // }
+      // var init_users_rsp = await API.graphql({query: listUsers, variables: { filter: filter}})
+      // var init_users = init_users_rsp.data.listUsers.items
+      // init_users.forEach(user => this.users.push(user))
+      // console.log(this.users)
     },
 
     async addUser (item) {

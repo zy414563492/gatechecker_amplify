@@ -17,7 +17,7 @@
     "axios": "^0.21.4",
     "core-js": "^3.6.5",
     "es6-promise": "^4.2.8",
-    "graphql": "^16.2.0",
+    "graphql": "^14.0.0",
     "graphql-tag": "^2.12.6",
     "redux": "^4.1.2",
     "isomorphic-fetch": "^3.0.0",

@@ -176,6 +176,12 @@
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon
           small
+          @click="resetItem(item)"
+        >
+          mdi-autorenew
+        </v-icon>
+        <v-icon
+          small
           class="mr-2"
           @click="editItem(item)"
         >
@@ -285,6 +291,38 @@ export default {
     //   .catch(err => console.log(err))
     // },
 
+    // get current time
+    getCurrentTime() {
+      let yy = new Date().getFullYear()
+      // let mm = new Date().getMonth() + 1
+      let mm = 
+        new Date().getMonth() < 10
+          ? "0" + (new Date().getMonth() + 1)
+          : new Date().getMonth() + 1
+      // let dd = new Date().getDate()
+      let dd = 
+        new Date().getDate() < 10
+          ? "0" + new Date().getDate()
+          : new Date().getDate()
+      // let hh = new Date().getHours()
+      let hh = 
+        new Date().getHours() < 10
+          ? "0" + new Date().getHours()
+          : new Date().getHours()
+      let mf =
+        new Date().getMinutes() < 10
+          ? "0" + new Date().getMinutes()
+          : new Date().getMinutes()
+      let ss =
+        new Date().getSeconds() < 10
+          ? "0" + new Date().getSeconds()
+          : new Date().getSeconds()
+      // let gettime = yy + "-" + mm + "-" + dd + " " + hh + ":" + mf + ":" + ss
+      // for AWS Datetime
+      let gettime = yy + "-" + mm + "-" + dd + "T" + hh + ":" + mf + ":" + ss + "Z"
+      return gettime
+    },
+
     async initialize () {
       // DataStore Method
       // var init_devices = await DataStore.query(Device)
@@ -381,6 +419,21 @@ export default {
       this.editedIndex = this.devices.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialogDelete = true
+    },
+
+    async resetItem (item) {
+      var resetItem = Object.assign({}, item)
+
+      // backend
+      const updateItem = {
+        id: resetItem.id,
+        _version: resetItem._version,
+        last_reset_time: this.getCurrentTime()
+      }
+      const response = await API.graphql({query: updateDevice, variables: {input: updateItem}})
+      var updatedDevice = response.data.updateDevice
+      console.log(updatedDevice)
+      console.log(`Item【${resetItem.device_id}】resetted.`)
     },
 
     // DELETE

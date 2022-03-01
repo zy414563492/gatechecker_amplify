@@ -65,6 +65,7 @@ export const onCreateDevice = /* GraphQL */ `
         nextToken
         startedAt
       }
+      last_reset_time
       createdAt
       updatedAt
       _version
@@ -86,6 +87,7 @@ export const onUpdateDevice = /* GraphQL */ `
         nextToken
         startedAt
       }
+      last_reset_time
       createdAt
       updatedAt
       _version
@@ -107,6 +109,7 @@ export const onDeleteDevice = /* GraphQL */ `
         nextToken
         startedAt
       }
+      last_reset_time
       createdAt
       updatedAt
       _version

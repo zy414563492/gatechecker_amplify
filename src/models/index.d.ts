@@ -44,6 +44,8 @@ export declare class Device {
   readonly is_using?: boolean;
   readonly last_alert_time?: string;
   readonly gateID?: string;
+  readonly Logs?: (Log | null)[];
+  readonly last_reset_time?: string;
   readonly createdAt?: string;
   readonly updatedAt?: string;
   constructor(init: ModelInit<Device, DeviceMetaData>);
@@ -55,6 +57,7 @@ export declare class Gate {
   readonly gate_id: string;
   readonly name?: string;
   readonly is_open?: boolean;
+  readonly Devices?: (Device | null)[];
   readonly buildingID?: string;
   readonly createdAt?: string;
   readonly updatedAt?: string;
@@ -67,6 +70,7 @@ export declare class Building {
   readonly building_id: string;
   readonly name?: string;
   readonly location?: string;
+  readonly Gates?: (Gate | null)[];
   readonly userID?: string;
   readonly createdAt?: string;
   readonly updatedAt?: string;
@@ -77,6 +81,7 @@ export declare class Building {
 export declare class User {
   readonly id: string;
   readonly user_id: string;
+  readonly Buildings?: (Building | null)[];
   readonly name: string;
   readonly createdAt?: string;
   readonly updatedAt?: string;

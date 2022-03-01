@@ -92,6 +92,7 @@ export const getDevice = /* GraphQL */ `
         nextToken
         startedAt
       }
+      last_reset_time
       createdAt
       updatedAt
       _version
@@ -114,6 +115,7 @@ export const listDevices = /* GraphQL */ `
         is_using
         last_alert_time
         gateID
+        last_reset_time
         createdAt
         updatedAt
         _version
@@ -145,6 +147,7 @@ export const syncDevices = /* GraphQL */ `
         is_using
         last_alert_time
         gateID
+        last_reset_time
         createdAt
         updatedAt
         _version

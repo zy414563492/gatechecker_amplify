@@ -70,16 +70,25 @@ export const schema = {
                     "properties": {}
                 },
                 {
+                    "type": "key",
+                    "properties": {
+                        "name": "byDevice",
+                        "fields": [
+                            "deviceID"
+                        ]
+                    }
+                },
+                {
                     "type": "auth",
                     "properties": {
                         "rules": [
                             {
                                 "allow": "private",
                                 "operations": [
-                                    "read",
-                                    "update",
                                     "create",
-                                    "delete"
+                                    "update",
+                                    "delete",
+                                    "read"
                                 ]
                             },
                             {
@@ -151,6 +160,27 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "Logs": {
+                    "name": "Logs",
+                    "isArray": true,
+                    "type": {
+                        "model": "Log"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": "deviceID"
+                    }
+                },
+                "last_reset_time": {
+                    "name": "last_reset_time",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -176,16 +206,25 @@ export const schema = {
                     "properties": {}
                 },
                 {
+                    "type": "key",
+                    "properties": {
+                        "name": "byGate",
+                        "fields": [
+                            "gateID"
+                        ]
+                    }
+                },
+                {
                     "type": "auth",
                     "properties": {
                         "rules": [
                             {
                                 "allow": "private",
                                 "operations": [
-                                    "read",
-                                    "update",
                                     "create",
-                                    "delete"
+                                    "update",
+                                    "delete",
+                                    "read"
                                 ]
                             },
                             {
@@ -243,6 +282,20 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "Devices": {
+                    "name": "Devices",
+                    "isArray": true,
+                    "type": {
+                        "model": "Device"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": "gateID"
+                    }
+                },
                 "buildingID": {
                     "name": "buildingID",
                     "isArray": false,
@@ -275,16 +328,25 @@ export const schema = {
                     "properties": {}
                 },
                 {
+                    "type": "key",
+                    "properties": {
+                        "name": "byBuilding",
+                        "fields": [
+                            "buildingID"
+                        ]
+                    }
+                },
+                {
                     "type": "auth",
                     "properties": {
                         "rules": [
                             {
                                 "allow": "private",
                                 "operations": [
-                                    "read",
-                                    "update",
                                     "create",
-                                    "delete"
+                                    "update",
+                                    "delete",
+                                    "read"
                                 ]
                             },
                             {
@@ -342,6 +404,20 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "Gates": {
+                    "name": "Gates",
+                    "isArray": true,
+                    "type": {
+                        "model": "Gate"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": "buildingID"
+                    }
+                },
                 "userID": {
                     "name": "userID",
                     "isArray": false,
@@ -374,16 +450,25 @@ export const schema = {
                     "properties": {}
                 },
                 {
+                    "type": "key",
+                    "properties": {
+                        "name": "byUser",
+                        "fields": [
+                            "userID"
+                        ]
+                    }
+                },
+                {
                     "type": "auth",
                     "properties": {
                         "rules": [
                             {
                                 "allow": "private",
                                 "operations": [
-                                    "read",
-                                    "update",
                                     "create",
-                                    "delete"
+                                    "update",
+                                    "delete",
+                                    "read"
                                 ]
                             },
                             {
@@ -427,6 +512,20 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "Buildings": {
+                    "name": "Buildings",
+                    "isArray": true,
+                    "type": {
+                        "model": "Building"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": "userID"
+                    }
+                },
                 "name": {
                     "name": "name",
                     "isArray": false,
@@ -465,10 +564,10 @@ export const schema = {
                             {
                                 "allow": "private",
                                 "operations": [
-                                    "read",
-                                    "update",
                                     "create",
-                                    "delete"
+                                    "update",
+                                    "delete",
+                                    "read"
                                 ]
                             },
                             {
@@ -498,5 +597,5 @@ export const schema = {
     },
     "enums": {},
     "nonModels": {},
-    "version": "389fdcba3a10a4bb7ef258d40ab23c7b"
+    "version": "a4e7f2c54b359f9b4f7ce3aa097fc5a4"
 };

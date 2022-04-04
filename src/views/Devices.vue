@@ -537,7 +537,7 @@ export default {
           is_entrance: this.editedItem.is_entrance,
           is_using: this.editedItem.is_using,
           last_alert_time: this.editedItem.last_alert_time,
-          last_reset_time: "2010-01-01T00:00:00Z"
+          last_reset_time: "2010-01-01T00:00:00Z",
           gateID: this.editedItem.gateID
         };
         const response = await API.graphql({ query: createDevice, variables: {input: createItem}})

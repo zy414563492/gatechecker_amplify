@@ -10,7 +10,7 @@
               <v-card-text>
                 <v-row>
                   <v-col cols="6">
-                    <v-subheader>{{ "施設名：" + count_info.name }}</v-subheader>
+                    <v-subheader>{{ "施設名：" + target_count_info.name }}</v-subheader>
                   </v-col>
                 </v-row>
 
@@ -30,7 +30,7 @@
                       name="count_enter"
                       type="text"
                       suffix="名"
-                      v-model="count_info.count_enter"
+                      v-model="target_count_info.count_enter"
                       readonly
                       solo
                     >
@@ -41,7 +41,7 @@
                       name="count_exit"
                       type="text"
                       suffix="名"
-                      v-model="count_info.count_exit"
+                      v-model="target_count_info.count_exit"
                       readonly
                       solo
                     >
@@ -61,7 +61,7 @@
                       name="count_inside"
                       type="text"
                       suffix="名"
-                      v-model="count_info.count_inside"
+                      v-model="target_count_info.count_inside"
                       readonly
                       solo
                     >
@@ -74,7 +74,7 @@
                       prominent
                       text
                       type="success"
-                      v-if="count_info.has_blacklist == false"
+                      v-if="target_count_info.has_blacklist == false"
                     >
                       ブラックリスト未検出
                     </v-alert>
@@ -96,6 +96,18 @@
                     </v-alert>
                   </v-col>
                 </v-row>
+
+                <!-- <v-row>
+                  <v-col cols="6">
+                   <v-btn color="primary" v-on:click="showUpdateCnt">showUpdateCnt</v-btn>
+                  </v-col>
+                </v-row>
+
+                <v-row>
+                  <v-col cols="6">
+                   <v-btn color="primary" v-on:click="test">TEST</v-btn>
+                  </v-col>
+                </v-row> -->
 
               </v-card-text>
           </v-card>
@@ -121,6 +133,10 @@
 import { API, graphqlOperation } from 'aws-amplify'
 import { countInfo } from '../graphql/queries'
 import { clearAlarm } from '../graphql/mutations'
+import { onCreateLog, onDeleteLog } from '../graphql/subscriptions'
+import gql from 'graphql-tag'
+
+let g_updateCnt = 0;
 
 export default {
   // props: {
@@ -131,12 +147,15 @@ export default {
 
   data: () => ({
     name: '現場確認',
+    user_id: null,
+    building_id: null,
     dialogDelete: false,
     loginItem: {
       uid: null,
       bid: null,
     },
-    count_info: {
+    count_info: null,
+    target_count_info: {
       id: null,
       bid: null,
       uid: null,
@@ -148,24 +167,119 @@ export default {
       has_blacklist: null,
       alarm_details: null,
     },
+    updateCnt: 0,
   }),
 
-  created () {
-    this.initialize()
+  async created () {
+    this.checkURL()
+    await this.initialize()
+    this.setSubscription()
+  },
+
+  // watch: { // 实时检测
+  //   "g_updateCnt": function (newValue, oldValue) {
+  //     console.log("g_updateCnt = ", newValue, oldValue)
+  //   }
+  // },
+
+  mounted () {
+    this.$nextTick(() => {
+      setInterval(this.refresh, 5000);
+    })
   },
 
   methods: {
-    initialize () {
-      // Login成功の場合、取得したデータで初期化する
-      let count_info = this.$route.query.count_info
+    // showUpdateCnt () {
+    //   console.log("g_updateCnt: ", g_updateCnt)
+    // },
+    // test () {
+    //   console.log("this.updateCnt", this.updateCnt)
+    // },
+    checkURL () {
+      let user_id = this.$route.query.user_id
+      let building_id = this.$route.query.building_id
 
       // URLでの直接アクセスは禁止にする
-      if (typeof(count_info) == "undefined") {
+      if (!user_id) {
         // 跳转到登录页面
         this.$router.push('/login')
         return
       }
-      this.count_info = count_info
+
+      this.user_id = user_id
+      this.building_id = building_id
+    },
+
+    async getCountInfo () {
+      // 直接访问的话默认是用的user_pool，会报错没有当前用户，因此这里用AWSAppSyncClient手动调用API_KEY进行认证
+      // const response = await API.graphql(graphqlOperation(countInfo))
+      var response = await this.$client.query({
+        query: gql(countInfo),
+        fetchPolicy: 'network-only'
+      })
+      var response_obj = JSON.parse(response.data.countInfo)
+      console.log(response_obj)
+      this.count_info = response_obj.count_info
+    },
+
+    searchInfo (item, uid, bid) {
+      if(!item) {
+        return -1
+      }
+      var match_idx = -1
+      for (var idx = 0; idx < item.length; idx++) {
+        if (item[idx].uid === uid && item[idx].bid === bid) {
+          match_idx = idx
+          break
+        }
+      }
+      return match_idx
+    },
+
+    getTargetCountInfo () {
+      console.log("[getTargetCountInfo...]")
+      var match_idx = this.searchInfo(this.count_info, this.user_id, this.building_id)
+      console.log(`match_idx = ${match_idx}`)
+      if (match_idx < 0) {
+        console.log("No matched Information.")
+      } else {
+        this.target_count_info = this.count_info[match_idx]
+      }
+    },
+
+    async initialize () {
+      console.log("[Initialize]")
+      console.log("updateCnt in data: ", this.updateCnt)
+      console.log("updateCnt in timer: ", g_updateCnt)
+      await this.getCountInfo()
+      this.getTargetCountInfo()
+    },
+
+    async refresh () {
+      if (this.updateCnt != g_updateCnt) {
+        console.log("[Refreshed]")
+        console.log("updateCnt in data: ", this.updateCnt)
+        console.log("updateCnt in timer: ", g_updateCnt)
+        this.updateCnt = g_updateCnt
+        await this.getCountInfo()
+        this.getTargetCountInfo()
+      }
+    },
+
+    setSubscription () {
+      var realtimeResults = function realtimeResults(data) {
+        console.log('[Realtime Subscription]\n', data)
+        g_updateCnt = g_updateCnt + 1
+      };
+      
+      const observable = this.$client.subscribe({
+        query: gql(onCreateLog),
+        fetchPolicy: 'network-only'
+      }).subscribe({
+        next: realtimeResults,
+        // complete: console.log,
+        // error: console.log,
+      });
     },
     
 
@@ -193,10 +307,10 @@ export default {
     deleteItemConfirm () {
       // 找到该设施的所有device，更新最近警报时间
       // this.clearAlarm({ "building_name": this.count_info.name })
-      this.clearAlarm(this.count_info.name)
+      this.clearAlarm(this.target_count_info.name)
 
       // clear alarm in frontend table
-      this.count_info.has_blacklist = false
+      this.target_count_info.has_blacklist = false
       this.closeDelete()
     },
 
@@ -205,7 +319,7 @@ export default {
     },
 
     showAlarmDetails () {
-      console.log(this.count_info.alarm_details)
+      console.log(this.target_count_info.alarm_details)
     },
   },
 };

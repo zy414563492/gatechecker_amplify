@@ -54,8 +54,8 @@
 </template>
 
 <script>
-// import { API, graphqlOperation } from 'aws-amplify'
 import { countInfo } from '../graphql/queries'
+import { onCreateLog, onDeleteLog } from '../graphql/subscriptions'
 import gql from 'graphql-tag'
 
 
@@ -70,54 +70,21 @@ export default {
     building_id: null,
     error_flg: false,
     error_msg: null,
-    count_info: null,
   }),
 
-  created () {
-    this.initialize()
-  },
 
   methods: {
-    async initialize () {
-      // 直接访问的话默认是用的user_pool，会报错没有当前用户，因此这里用AWSAppSyncClient手动调用API_KEY进行认证
-      // const response = await API.graphql(graphqlOperation(countInfo))
-      const response = await this.$client.query({
-        query: gql(countInfo)
-      })
-      const response_obj = JSON.parse(response.data.countInfo)
-      console.log(response_obj)
-      this.count_info = response_obj.count_info
-    },
-
-    searchInfo (item, uid, bid) {
-      var match_idx = -1
-      for (var idx = 0; idx < item.length; idx++) {
-        if (item[idx].uid === uid && item[idx].bid === bid) {
-          match_idx = idx
-          break
-        }
-      }
-      return match_idx
-    },
-
     login () {
-      console.log("count_info:\n", this.count_info)
       console.log("user_id:\n", this.user_id)
       console.log("building_id:\n", this.building_id)
 
-      var match_idx = this.searchInfo(this.count_info, this.user_id, this.building_id)
-      console.log(`match_idx = ${match_idx}`)
-      if (match_idx < 0) {
-        console.log("No matched Information.")
-      } else {
-        this.$router.push({
-          path: '/',
-          query: {
-            count_info: this.count_info[match_idx],
-          },
-        })
-      }
-
+      this.$router.push({
+        path: '/',
+        query: {
+          user_id: this.user_id,
+          building_id: this.building_id
+        },
+      })
     },
 
     // login () {

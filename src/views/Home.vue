@@ -97,18 +97,6 @@
                   </v-col>
                 </v-row>
 
-                <!-- <v-row>
-                  <v-col cols="6">
-                   <v-btn color="primary" v-on:click="showUpdateCnt">showUpdateCnt</v-btn>
-                  </v-col>
-                </v-row>
-
-                <v-row>
-                  <v-col cols="6">
-                   <v-btn color="primary" v-on:click="test">TEST</v-btn>
-                  </v-col>
-                </v-row> -->
-
               </v-card-text>
           </v-card>
         </v-layout>
@@ -136,15 +124,8 @@ import { clearAlarm } from '../graphql/mutations'
 import { onCreateLog, onDeleteLog } from '../graphql/subscriptions'
 import gql from 'graphql-tag'
 
-let g_updateCnt = 0;
 
 export default {
-  // props: {
-  //   user_id: String,
-  //   building_id: String,
-  //   callback: Function,
-  // },
-
   data: () => ({
     name: '現場確認',
     user_id: null,
@@ -167,7 +148,6 @@ export default {
       has_blacklist: null,
       alarm_details: null,
     },
-    updateCnt: 0,
   }),
 
   async created () {
@@ -176,25 +156,7 @@ export default {
     this.setSubscription()
   },
 
-  // watch: { // 实时检测
-  //   "g_updateCnt": function (newValue, oldValue) {
-  //     console.log("g_updateCnt = ", newValue, oldValue)
-  //   }
-  // },
-
-  mounted () {
-    this.$nextTick(() => {
-      setInterval(this.refresh, 5000);
-    })
-  },
-
   methods: {
-    // showUpdateCnt () {
-    //   console.log("g_updateCnt: ", g_updateCnt)
-    // },
-    // test () {
-    //   console.log("this.updateCnt", this.updateCnt)
-    // },
     checkURL () {
       let user_id = this.$route.query.user_id
       let building_id = this.$route.query.building_id
@@ -248,28 +210,14 @@ export default {
     },
 
     async initialize () {
-      console.log("[Initialize]")
-      console.log("updateCnt in data: ", this.updateCnt)
-      console.log("updateCnt in timer: ", g_updateCnt)
       await this.getCountInfo()
       this.getTargetCountInfo()
     },
 
-    async refresh () {
-      if (this.updateCnt != g_updateCnt) {
-        console.log("[Refreshed]")
-        console.log("updateCnt in data: ", this.updateCnt)
-        console.log("updateCnt in timer: ", g_updateCnt)
-        this.updateCnt = g_updateCnt
-        await this.getCountInfo()
-        this.getTargetCountInfo()
-      }
-    },
-
     setSubscription () {
-      var realtimeResults = function realtimeResults(data) {
-        console.log('[Realtime Subscription]\n', data)
-        g_updateCnt = g_updateCnt + 1
+      var realtimeResults = (data) => {
+        console.log('[Realtime Subscription]\n', data);
+        this.initialize();
       };
       
       const observable = this.$client.subscribe({
@@ -282,7 +230,6 @@ export default {
       });
     },
     
-
     // async clearAlarm (item) {
     //   await this.$axios({
     //     method: 'post',

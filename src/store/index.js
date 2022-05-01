@@ -5,12 +5,14 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    // token: false,
+    count: 0,
+  },
+  getters: {
   },
   mutations: {
-    // validAuth (state) {
-    //   state.token = true
-    // },
+    increment (state) {
+      state.count++
+    },
   },
   actions: {
   },

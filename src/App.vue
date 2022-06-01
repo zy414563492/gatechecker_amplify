@@ -11,7 +11,7 @@
 
         <v-app-bar-nav-icon @click="drawer=!drawer; permanent=!permanent" />
 
-        <v-toolbar-title>Demo App</v-toolbar-title>
+        <v-toolbar-title>KB-FACE</v-toolbar-title>
 
         <v-spacer></v-spacer>
 

@@ -96,12 +96,14 @@
                     </v-alert>
                   </v-col>
                 </v-row>
+                <v-row>
                     <v-btn
                       depressed
                       color="primary"
                     >
                       更新
                     </v-btn>
+                </v-row>
               </v-card-text>
           </v-card>
         </v-layout>

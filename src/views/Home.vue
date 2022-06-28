@@ -96,7 +96,12 @@
                     </v-alert>
                   </v-col>
                 </v-row>
-
+                    <v-btn
+                      depressed
+                      color="primary"
+                    >
+                      更新
+                    </v-btn>
               </v-card-text>
           </v-card>
         </v-layout>
@@ -207,29 +212,12 @@ export default {
       } else {
         this.target_count_info = this.count_info[match_idx]
       }
-
-    setInterval(function () {
-      console.log('30秒毎に処理')
-        setTimeout(
-          function() {
-            console.log('5秒後に処理')
-            setTimeout(
-              function() {
-                console.log('4秒後に処理')
-              }.bind(this),
-              4000
-            );
-          }.bind(this),
-          5000
-        );
-      }.bind(this), 30000)
     },
 
     async initialize () {
       await this.getCountInfo()
       this.getTargetCountInfo()
     },
-
 
     setSubscription () {
       var realtimeResults = (data) => {

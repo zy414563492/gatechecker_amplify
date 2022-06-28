@@ -221,6 +221,12 @@ export default {
       this.getTargetCountInfo()
     },
 
+    mounted () {
+    setInterval(function () {
+      console.log('5秒毎に処理')
+      }.bind(this), 5000)
+    },
+
     setSubscription () {
       var realtimeResults = (data) => {
         console.log('[Realtime Subscription]\n', data);

@@ -27,7 +27,7 @@ export default {
         {
           type: "email",
           label: "Email",
-          placeholder: "example@kb-eye.jp",
+          placeholder: "example@hisrc.com",
           required: true,
         },
         {

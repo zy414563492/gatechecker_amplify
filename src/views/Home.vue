@@ -214,14 +214,7 @@ export default {
       } else {
         this.target_count_info = this.count_info[match_idx]
       }
-    },
 
-    async initialize () {
-      await this.getCountInfo()
-      this.getTargetCountInfo()
-    },
-
-    mounted () {
     setInterval(function () {
       console.log('10秒毎に処理')
         setTimeout(
@@ -237,6 +230,11 @@ export default {
           5000
         );
       }.bind(this), 10000)
+    },
+
+    async initialize () {
+      await this.getCountInfo()
+      this.getTargetCountInfo()
     },
 
     setSubscription () {

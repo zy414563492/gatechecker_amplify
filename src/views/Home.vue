@@ -97,12 +97,7 @@
                   </v-col>
                 </v-row>
                 <v-row>
-                    <v-btn
-                      depressed
-                      color="primary"
-                    >
-                      更新
-                    </v-btn>
+                  <v-btn color="blue darken-1" text @click="getTargetCountInfo">更新</v-btn>
                 </v-row>
               </v-card-text>
           </v-card>
@@ -215,7 +210,7 @@ export default {
         this.target_count_info = this.count_info[match_idx]
       }
 
-      
+
     setInterval(function () {
       console.log('30秒毎に処理')
         setTimeout(

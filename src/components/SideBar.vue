@@ -3,7 +3,7 @@
     <v-list-item>
       <v-list-item-content>
         <v-list-item-title class="text-h6">
-          Demo APP
+          KB-FACE
         </v-list-item-title>
         <v-list-item-subtitle>
           V1.0

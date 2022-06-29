@@ -10,7 +10,7 @@
 
         <v-app-bar-nav-icon @click="drawer=!drawer; permanent=!permanent" />
 
-        <v-toolbar-title>Demo App</v-toolbar-title>
+        <v-toolbar-title>KB-FACE</v-toolbar-title>
 
         <v-spacer></v-spacer>
 
@@ -49,7 +49,7 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title class="text-h6">
-            For Manager
+            管理者画面
           </v-list-item-title>
           <v-list-item-subtitle>
             V1.0

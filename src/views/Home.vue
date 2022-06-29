@@ -201,7 +201,7 @@ export default {
       return match_idx
     },
 
-    setTargetCountInfo () {
+    getTargetCountInfo () {
       console.log("[getTargetCountInfo...]")
       var match_idx = this.searchInfo(this.count_info, this.user_id, this.building_id)
       console.log(`match_idx = ${match_idx}`)
@@ -212,7 +212,7 @@ export default {
       }
     },
 
-    getIntervalInfo () {
+    setIntervalInfo () {
       setInterval(function () {
         this.getCountInfo()
         this.getTargetCountInfo()

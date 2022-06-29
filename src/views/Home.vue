@@ -212,26 +212,10 @@ export default {
 
 
     setInterval(function () {
-      console.log('10秒毎に処理')
-        this.getCountInfo()
-        this.getTargetCountInfo()
-        setTimeout(
-          function() {
-            this.getCountInfo()
-            this.getTargetCountInfo()
-            console.log('5秒後に処理')
-            setTimeout(
-              function() {
-                this.getCountInfo()
-                this.getTargetCountInfo()
-                console.log('4秒後に処理')
-              }.bind(this),
-              4000
-            );
-          }.bind(this),
-          5000
-        );
-      }.bind(this), 10000)
+      this.getCountInfo()
+      this.getTargetCountInfo()
+      console.log('5秒毎に処理')
+      }.bind(this), 5000)
 
     },
 

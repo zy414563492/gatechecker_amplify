@@ -43,6 +43,22 @@ import LinkBar from '@/components/LinkBar.vue'
 Vue.component('surround-bars', SurroundBars)
 Vue.component('link-bar', LinkBar)
 
+let languageDict = {
+    ja:{
+        'Sign In Account' : 'アカウントにサインイン',
+        'Username' : 'ユーザ名',
+        'Enter your username' : 'ユーザ名を入力してください',
+        'Password' : 'パスワード',
+        'Enter your password' : 'パスワードを入力してください',
+        'Forgot your password? ' : 'パスワードを忘れた場合',
+        'Reset password' : 'パスワードのリセット',
+        'No account? ' : 'まだアカウントがない場合',
+        'Create account' : 'アカウント作成',
+        'Sign In' : 'サインイン',
+    }
+}
+AmplifyModules.I18n.putVocabularies(languageDict)
+
 new Vue({
   router,
   store,

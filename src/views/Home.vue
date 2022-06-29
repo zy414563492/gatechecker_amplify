@@ -209,14 +209,14 @@ export default {
       } else {
         this.target_count_info = this.count_info[match_idx]
       }
+    },
 
-
-    setInterval(function () {
-      this.getCountInfo()
-      this.getTargetCountInfo()
-      console.log('5秒毎に処理')
-      }.bind(this), 5000)
-
+    getIntervalInfo () {
+      setInterval(function () {
+        this.getCountInfo()
+        this.getTargetCountInfo()
+        console.log('5秒毎に処理')
+        }.bind(this), 5000)
     },
 
     async initialize () {

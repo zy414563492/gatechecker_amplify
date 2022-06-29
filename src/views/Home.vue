@@ -223,8 +223,20 @@ export default {
 
     mounted () {
     setInterval(function () {
-      console.log('5秒毎に処理')
-      }.bind(this), 5000)
+      console.log('10秒毎に処理')
+        setTimeout(
+          function() {
+            console.log('5秒後に処理')
+            setTimeout(
+              function() {
+                console.log('4秒後に処理')
+              }.bind(this),
+              4000
+            );
+          }.bind(this),
+          5000
+        );
+      }.bind(this), 10000)
     },
 
     setSubscription () {

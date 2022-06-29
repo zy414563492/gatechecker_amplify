@@ -155,6 +155,7 @@ export default {
   async created () {
     this.checkURL()
     await this.initialize()
+    this.setIntervalInfo()
     this.setSubscription()
   },
 
@@ -200,7 +201,7 @@ export default {
       return match_idx
     },
 
-    getTargetCountInfo () {
+    setTargetCountInfo () {
       console.log("[getTargetCountInfo...]")
       var match_idx = this.searchInfo(this.count_info, this.user_id, this.building_id)
       console.log(`match_idx = ${match_idx}`)
